@@ -111,6 +111,10 @@ Valid packet types and their content are described below:
   - `node-record` is the current version of the sender's signed node record. The record can be an
     empty byte array in case the node does not wish to publish or update its record.
 
+When replying to a Hey packet with non-empty `node-record`, the UDP endpoint from the
+record, the reply should be sent there instead of replying to the UDP packet source
+address.
+
 #### FindNode Packet (0x02)
 
   `[target-hash]`
@@ -185,3 +189,7 @@ improvements:
   stored endpoint and must resort to ping/pong to revalidate. In version 5, a node record
   received through neighbors can update local information because records contain a signed
   sequence number.
+
+# Copyright
+
+Copyright and related rights waived via CC0.
