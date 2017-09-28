@@ -22,6 +22,7 @@ KV_CODECS = {
     },
 }
 
+MAXSIZE = 300
 
 class ENR:
     _kv, _sig, _raw = {}, None, None
@@ -54,7 +55,8 @@ class ENR:
 
     def sign(self, privkey):
         self._seq = self._seq + 1
-        self.set('id_secp256k1', compress_secp256k1_pubkey(privkey.get_verifying_key()))
+        self.set('id', 'secp256k1-keccak')
+        self.set('secp256k1', compress_secp256k1_pubkey(privkey.get_verifying_key()))
         self._sig, self._raw = self.sign_and_encode(privkey)
         return self
 
@@ -76,7 +78,7 @@ class ENR:
 
     @classmethod
     def from_rlp(cls, data):
-        assert(len(data) <= 200) # check max size
+        assert(len(data) <= MAXSIZE) # check max size
         elems = rlp.decode(data)
         assert(isinstance(elems, list))
         assert(len(elems) >= 2 and len(elems)%2 == 0)
@@ -101,22 +103,21 @@ class ENR:
         return kv
 
     def _check_signature(self):
+        # check identity scheme
+        scheme = self.get('id')
+        if scheme != bytes('secp256k1-keccak')
+            raise 'unsupported identity scheme "' + scheme + '"'
         # remove list header and signature to get signed content
         _, _, e = rlp.codec.consume_length_prefix(self._raw, 0)
         _, e = rlp.codec.consume_item(self._raw, e)
         content = self._raw[e:]
         # verify against the public key from k/v data
-        id = self.get('id_secp256k1')
-        assert(id is not None)
-        pub = decompress_secp256k1_pubkey(id)
+        pub = decompress_secp256k1_pubkey(self.get('secp256k1'))
         pub.verify(self._sig, content, hashfunc=sha3.keccak_256)
     
     def __str__(self):
         kv = {k: self.get(k) for k in sorted(self._kv.keys())}
         return '<ENR seq={} {}>'.format(self.seq, kv)
-
-    def url(self):
-        return 'enr:' + base64.urlsafe_b64encode(self.encode()).decode('ascii')
 
 
 def compress_secp256k1_pubkey(pub):

@@ -12,7 +12,6 @@ def test_encode_decode():
     e.sign(privkey)
     record = e.encode()
     print(e)
-    print('URL :: ' + e.url())
     print('RLP :: ({} bytes) {}'.format(len(record), record.hex()))
 
     e2 = ENR.from_rlp(record)
