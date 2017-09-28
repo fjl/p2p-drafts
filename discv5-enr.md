@@ -1,7 +1,7 @@
 # Preamble
 
     EIP: XXX
-    Title: Signed Ethereum Node Records (ENR)
+    Title: Ethereum Node Records (ENR)
     Author: Felix Lange <fjl@ethereum.org>
     Type: Standard Track
     Category Networking
@@ -10,8 +10,7 @@
 
 # Abstract
 
-This EIP defines Signed Ethereum Node Records, an open format for p2p connectivity
-information.
+This EIP defines Ethereum Node Records, an open format for p2p connectivity information.
 
 # Motivation
 
@@ -36,9 +35,14 @@ be able to determine which record is newer.
 
 The components of a node record are:
 
- - `signature`: cryptographic signature of record contents made by the node identity key.
- - `seq`: A sequence number. Nodes should increase the number whenever the record changes.
--  The remainder of the record consists of arbitrary key/value pairs.
+- `signature`: cryptographic signature of record contents
+- `seq`: A sequence number. Nodes should increase the number whenever the record changes
+   and republish the record.
+-  The remainder of the record consists of arbitrary key/value pairs, which must be sorted
+   by key.
+
+A record's signature is made and validated according to an *identy scheme*. The identity
+scheme is also responsible for deriving a node's address in the DHT.
 
 ### RLP Encoding
 
@@ -46,22 +50,43 @@ The canonical encoding of a node record is an RLP list of `[signature, seq, k, v
 The maximum encoded size of a node record is 300 bytes. Implementations should reject
 records larger than this size.
 
-Defined Key Value Pairs:
-
-  - key: "id", value: "secp256k1"
-  - key: "secp256k1", value: (compressed) secp256k1 public key
-  - key: "ip4", value: IPv4 address, 4 bytes
-  - key: "ip6", value: IPv4 address, 4 bytes
-  - key: "discv5", value: UDP port for discovery v5, 2 bytes
-
 Records are signed and encoded as follows:
 
     content   = rlp(seq) || rlp(k) || rlp(v) || ...
-    signature = rlp(sign(keccak256(content)))
+    signature = rlp(sign(content))
     record    = rlp_list(signature || content)
 
+### Key/Value Pairs
+
+| Key          | Value                                            |
+|:-------------|:-------------------------------------------------|
+| `id`         | name of identity scheme, e.g. "secp256k1-keccak" |
+| `secp256k1`  | compressed secp256k1 public key                  |
+| `ip4`        | IPv4 address, 4 bytes                            |
+| `ip6`        | IPv6 address, 16 bytes                           |
+| `discv5`     | UDP port for discovery v5                        |
+
+### secp256k1-keccak Identity Scheme
+
+This specification defines a single scheme to be used as the default: "secp256k1-keccak".
+
+- To sign record `content` with this scheme, apply the keccak256[^1] hash function to
+  `content`, then create a signature of the hash. The resulting 64-byte signature is
+  encoded as the concatenation of `r` and `s`.
+- To verify a record, check that the signature was made by the public key in the
+  "secp256k1" key/value pair.
+- To derive a node address, take the keccak256 hash of the public key.
+
+[^1]: As used by the EVM
+
 # Rationale
+
+The size of a record is limited because records are relayed frequently and may be included
+in size-constrained protocols such as DNS. A record containing IPv4 address, when signed
+using the "secp256k1-keccak" scheme occupies roughly 120 bytes, leaving plenty of room for
+additional metadata.
 
 # Copyright
 
 Copyright and related rights waived via CC0.
+
