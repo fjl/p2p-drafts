@@ -53,7 +53,7 @@ records larger than this size.
 Records are signed and encoded as follows:
 
     content   = rlp(seq) || rlp(k) || rlp(v) || ...
-    signature = rlp(sign(content))
+    signature = rlp(sign(rlp_list(content)))
     record    = rlp_list(signature || content)
 
 ### Key/Value Pairs
