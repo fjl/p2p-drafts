@@ -62,7 +62,8 @@ class ENR:
 
     def sign_and_encode(self, privkey):
         content = self._content()
-        sig = privkey.sign_deterministic(content, hashfunc=sha3.keccak_256)
+        sigcontent = _wrap_list(content)
+        sig = privkey.sign_deterministic(sigcontent, hashfunc=sha3.keccak_256)
         rec = rlp.encode(sig) + content
         raw = rlp.codec.length_prefix(len(rec), 0xc0) + rec
         return (sig, raw)
@@ -105,20 +106,24 @@ class ENR:
     def _check_signature(self):
         # check identity scheme
         scheme = self.get('id')
-        if scheme != bytes('secp256k1-keccak')
+        if scheme != b'secp256k1-keccak':
             raise 'unsupported identity scheme "' + scheme + '"'
         # remove list header and signature to get signed content
         _, _, e = rlp.codec.consume_length_prefix(self._raw, 0)
         _, e = rlp.codec.consume_item(self._raw, e)
         content = self._raw[e:]
+        # add list header around unsigned content
+        sigcontent = _wrap_list(content)
         # verify against the public key from k/v data
         pub = decompress_secp256k1_pubkey(self.get('secp256k1'))
-        pub.verify(self._sig, content, hashfunc=sha3.keccak_256)
+        pub.verify(self._sig, sigcontent, hashfunc=sha3.keccak_256)
     
     def __str__(self):
         kv = {k: self.get(k) for k in sorted(self._kv.keys())}
         return '<ENR seq={} {}>'.format(self.seq, kv)
 
+def _wrap_list(content):
+    return rlp.codec.length_prefix(len(content), 0xc0) + content
 
 def compress_secp256k1_pubkey(pub):
     p = pub.pubkey.point
