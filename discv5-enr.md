@@ -1,6 +1,6 @@
 # Preamble
 
-    EIP: XXX
+    EIP: 778
     Title: Ethereum Node Records (ENR)
     Author: Felix Lange <fjl@ethereum.org>
     Type: Standard Track
@@ -58,6 +58,9 @@ Records are signed and encoded as follows:
 
 ### Key/Value Pairs
 
+Key/Value keys can be any byte sequence, but should be text. The following keys are
+pre-defined:
+
 | Key          | Value                                            |
 |:-------------|:-------------------------------------------------|
 | `id`         | name of identity scheme, e.g. "secp256k1-keccak" |
@@ -80,6 +83,15 @@ This specification defines a single scheme to be used as the default: "secp256k1
 [^1]: As used by the EVM
 
 # Rationale
+
+The format is meant to suit future needs in two ways:
+
+- Adding new key/value pairs: This is always possible and doesn't require implementation
+  consensus. Existing clients will accept any key/value pairs regardless of whether they
+  can interpret their content.
+- Adding identity schemes: these need implementation consensus because the network won't
+  accept the signature otherwise. To introduce a new identity scheme, propose an EIP and
+  get it implemented. The scheme can be used as soon as most clients accept it.
 
 The size of a record is limited because records are relayed frequently and may be included
 in size-constrained protocols such as DNS. A record containing IPv4 address, when signed
