@@ -104,16 +104,14 @@ class ENR:
             prev = key
         return kv
 
-    def _check_signature(self, list):
+    def _check_signature(self, siglist):
         # check identity scheme
         scheme = self.get('id')
         if scheme != b'secp256k1-keccak':
             raise 'unsupported identity scheme "' + scheme + '"'
-        # add list header around unsigned content
-        sigcontent = rlp.encode(list)
         # verify against the public key from k/v data
         pub = decompress_secp256k1_pubkey(self.get('secp256k1'))
-        pub.verify(self._sig, sigcontent, hashfunc=sha3.keccak_256)
+        pub.verify(self._sig, rlp.encode(siglist), hashfunc=sha3.keccak_256)
     
     def __str__(self):
         kv = {k: self.get(k) for k in sorted(self._kv.keys())}
