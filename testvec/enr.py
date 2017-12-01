@@ -53,6 +53,9 @@ class ENR:
         self._raw, self._sig = None, None # any change invalidates signature
         del self._kv[k]
 
+    def node_addr(self):
+        return sha3.keccak_256(self.get('secp256k1')).digest()
+
     def sign(self, privkey):
         self._seq = self._seq + 1
         self.set('id', 'secp256k1-keccak')

@@ -10,9 +10,11 @@ privkey = ecdsa.SigningKey.from_string(bytes.fromhex(privkey_hex), curve=ecdsa.S
 def test_encode_decode():
     e = ENR().set('ip4', '127.0.0.1').set('discv5', 30303)
     e.sign(privkey)
-    record = e.encode()
-    print(e)
-    print('RLP :: ({} bytes) {}'.format(len(record), record.hex()))
+    enc = e.encode()
+    print('Record:\n  ', e)
+    print('RLP ({} bytes):\n  '.format(len(enc)), enc.hex())
+    print('Signing pubkey:\n  ', e.get('secp256k1').hex())
+    print('Node address:\n  ', e.node_addr().hex())
 
-    e2 = ENR.from_rlp(record)
-    print("decoded {}".format(e2))
+    e2 = ENR.from_rlp(enc)
+    print("Decoded Record:\n  ", e2)
