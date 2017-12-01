@@ -62,15 +62,13 @@ class ENR:
 
     def sign_and_encode(self, privkey):
         content = self._content()
-        sigcontent = _wrap_list(content)
+        sigcontent = rlp.encode(content)
         sig = privkey.sign_deterministic(sigcontent, hashfunc=sha3.keccak_256)
-        rec = rlp.encode(sig) + content
-        raw = rlp.codec.length_prefix(len(rec), 0xc0) + rec
-        return (sig, raw)
+        rec = rlp.encode([sig] + content)
+        return (sig, rec)
     
     def _content(self):
-        kv = [ rlp.encode(k) + rlp.encode(v) for (k, v) in sorted(self._kv.items()) ]
-        return rlp.encode(self._seq) + b''.join(kv)
+        return [self._seq] + [e for kv in sorted(self._kv.items()) for e in kv]
     
     def encode(self):
         if self._raw is None:
@@ -88,7 +86,7 @@ class ENR:
         e = cls(seq)
         e._raw, e._sig = data, elems[0]
         e._kv = cls._decode_kv(elems[2:])
-        e._check_signature()
+        e._check_signature(elems[1:])
         return e
 
     @classmethod
@@ -103,17 +101,13 @@ class ENR:
             prev = key
         return kv
 
-    def _check_signature(self):
+    def _check_signature(self, list):
         # check identity scheme
         scheme = self.get('id')
         if scheme != b'secp256k1-keccak':
             raise 'unsupported identity scheme "' + scheme + '"'
-        # remove list header and signature to get signed content
-        _, _, e = rlp.codec.consume_length_prefix(self._raw, 0)
-        _, e = rlp.codec.consume_item(self._raw, e)
-        content = self._raw[e:]
         # add list header around unsigned content
-        sigcontent = _wrap_list(content)
+        sigcontent = rlp.encode(list)
         # verify against the public key from k/v data
         pub = decompress_secp256k1_pubkey(self.get('secp256k1'))
         pub.verify(self._sig, sigcontent, hashfunc=sha3.keccak_256)
@@ -121,9 +115,6 @@ class ENR:
     def __str__(self):
         kv = {k: self.get(k) for k in sorted(self._kv.keys())}
         return '<ENR seq={} {}>'.format(self.seq, kv)
-
-def _wrap_list(content):
-    return rlp.codec.length_prefix(len(content), 0xc0) + content
 
 def compress_secp256k1_pubkey(pub):
     p = pub.pubkey.point
