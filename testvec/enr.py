@@ -66,7 +66,7 @@ class ENR:
     def sign_and_encode(self, privkey):
         content = self._content()
         sigcontent = rlp.encode(content)
-        sig = privkey.sign_deterministic(sigcontent, hashfunc=sha3.keccak_256)
+        sig = privkey.sign_deterministic(sigcontent, hashfunc=sha3.keccak_256, sigencode=ecdsa.util.sigencode_der)
         rec = rlp.encode([sig] + content)
         return (sig, rec)
     
@@ -111,7 +111,7 @@ class ENR:
             raise 'unsupported identity scheme "' + scheme + '"'
         # verify against the public key from k/v data
         pub = decompress_secp256k1_pubkey(self.get('secp256k1'))
-        pub.verify(self._sig, rlp.encode(siglist), hashfunc=sha3.keccak_256)
+        pub.verify(self._sig, rlp.encode(siglist), hashfunc=sha3.keccak_256, sigdecode=ecdsa.util.sigdecode_der)
     
     def __str__(self):
         kv = {k: self.get(k) for k in sorted(self._kv.keys())}
