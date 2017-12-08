@@ -24,7 +24,7 @@ wire format and expected semantics for all packets.
 
 Nodes participating in the discovery protocol form a Kademlia-like DHT. Unlike Kademlia,
 the DHT does not store arbitrary key/value pairs. The purpose of the DHT is associating
-node identifiers with node records as defined in [EIP XXX][eip-enr].
+node identifiers with node records as defined in [EIP 778][eip-enr].
 
 Node identitifiers are public keys. The distance between two node keys is computed by
 XORing the keccak-256 hashes of the encoded public keys.
@@ -35,13 +35,13 @@ Each node maintains a routing table of up to 256 k-buckets containing the node r
 neighboring nodes according to the XOR distance metric. The bucket size `k` is defined to
 be 16 like in protocol version 4. Routing table maintance follows the Kademlia paper:
 entries in each bucket in the table are sorted according to the time of last contact with
-the entry.
+the entry. Any valid communication with the entry moves it to the front of the bucket.
 
-To find a node which is close to a particular hash-sized target, nodes perform recursive
-lookups using the FindNode packet. In a lookup, the target is approached by sending out
-FindNode requests to the closest known nodes. When a `Neighbors` response arrives, more
-FindNode requests are sent to the closest nodes from the result set until no closer
-nodes can be discovered.
+To find a node which is close to a particular target, nodes perform recursive lookups
+using the FindNode packet. In a lookup, the target is approached by sending out FindNode
+requests to the closest known nodes. When a `Neighbors` response arrives, more FindNode
+requests are sent to the closest nodes from the result set until no closer nodes can be
+discovered.
 
 ### Topic Index
 
@@ -85,6 +85,27 @@ sufficiently unresponsive, it should be removed from the Kademlia table and topi
 To prove that a particular node is actively participating in the discovery protocol using
 a certain UDP endpoint, it must send a Hey reply packet (with cookie) from that endpoint.
 
+### Record Relay Rules
+
+To avoid relaying spam records, implementations must place restrictions on node records
+that are to be relayed.
+
+Implementation must check the signature of all records and reject any records with invalid
+signature.
+
+When receiving a record in a Hey packet, the record's node address must match the sender
+and the IPv4 or IPv6 address and discovery port of the record (if present) must match the
+source address of the UDP packet containing it. Records without IP and port must not be
+relayed.
+
+When receiving a record in a Neighbors packet, the IP address of the record must not cross
+defined network boundaries, i.e.
+
+* Implementations should reject records containing a loopback address in UDP packets from
+  remote hosts.
+* Implementations should also reject records containing a local area network address from
+  hosts on the Internet.
+
 ### Packets
 
 Discovery Protocol packets are sent using UDP. A single packet must not exceed 1280 bytes.
@@ -105,15 +126,14 @@ Valid packet types and their content are described below:
   node liveness checks. Hey can be sent at any time.
   
   - `signature` is used to authenticate the reply.
-  - `reply-cookie` should be the abbreviated hash of the last Hey packet to which this packet is a response.
-  - `[recipient-ip, recipient-port]` is the UDP envelope address to which the packet is being sent.
+  - `reply-cookie` should be the abbreviated hash of the last Hey packet to which this
+    packet is a response.
+  - `[recipient-ip, recipient-port]` is the UDP envelope address to which the packet is
+    being sent.
   - `wantreply` is `1` if the sender wishes to receive a reply and `0` otherwise.
-  - `node-record` is the current version of the sender's signed node record. The record can be an
-    empty byte array in case the node does not wish to publish or update its record.
-
-When replying to a Hey packet with non-empty `node-record`, the UDP endpoint from the
-record, the reply should be sent there instead of replying to the UDP packet source
-address.
+  - `node-record` is the current version of the sender's signed node record. The record
+    can be an empty byte array in case the node does not wish to publish or update its
+    record.
 
 #### FindNode Packet (0x02)
 
