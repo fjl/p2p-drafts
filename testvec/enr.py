@@ -2,13 +2,12 @@
 
 import rlp
 import socket
-import ecdsa
 import sha3
 import base64
+import coincurve
+import coincurve.ecdsa
 
-from bitcoin import encode_pubkey, decode_pubkey
 from rlp.utils import bytes_to_str
-
 
 # codecs for common properties
 KV_CODECS = {
@@ -23,6 +22,8 @@ KV_CODECS = {
 }
 
 MAXSIZE = 300
+
+class SignatureError(BaseException): pass
 
 class ENR:
     _kv, _sig, _raw = {}, None, None
@@ -59,14 +60,14 @@ class ENR:
     def sign(self, privkey):
         self._seq = self._seq + 1
         self.set('id', 'secp256k1-keccak')
-        self.set('secp256k1', compress_secp256k1_pubkey(privkey.get_verifying_key()))
+        self.set('secp256k1', privkey.public_key.format(compressed=True))
         self._sig, self._raw = self.sign_and_encode(privkey)
         return self
 
     def sign_and_encode(self, privkey):
         content = self._content()
-        sigcontent = rlp.encode(content)
-        sig = privkey.sign_deterministic(sigcontent, hashfunc=sha3.keccak_256)
+        sigdata = sha3.keccak_256(rlp.encode(content)).digest()
+        sig = privkey.sign_recoverable(sigdata, hasher=None)[0:64]
         rec = rlp.encode([sig] + content)
         return (sig, rec)
     
@@ -108,21 +109,21 @@ class ENR:
         # check identity scheme
         scheme = self.get('id')
         if scheme != b'secp256k1-keccak':
-            raise 'unsupported identity scheme "' + scheme + '"'
+            raise SignatureError('unsupported identity scheme "' + scheme + '"')
+        pubkey = self.get('secp256k1')
+        if len(pubkey) != 33:
+            raise SignatureError('invalid public key length')
+        pubkey = coincurve.PublicKey(pubkey)
         # verify against the public key from k/v data
-        pub = decompress_secp256k1_pubkey(self.get('secp256k1'))
-        pub.verify(self._sig, rlp.encode(siglist), hashfunc=sha3.keccak_256)
+        sigdata = sha3.keccak_256(rlp.encode(siglist)).digest()
+        if not pubkey.verify(_signature_to_der(self._sig), sigdata, hasher=None):
+            raise SignatureError('invalid signature')
     
     def __str__(self):
         kv = {k: self.get(k) for k in sorted(self._kv.keys())}
         return '<ENR seq={} {}>'.format(self.seq, kv)
 
-def compress_secp256k1_pubkey(pub):
-    p = pub.pubkey.point
-    return encode_pubkey((p.x(), p.y()), 'bin_compressed')
+def _signature_to_der(sig):
+    csig = coincurve.ecdsa.deserialize_compact(sig)
+    return coincurve.ecdsa.cdata_to_der(csig)
 
-def decompress_secp256k1_pubkey(data):
-    x, y = decode_pubkey(data, 'bin_compressed')
-    p = ecdsa.ellipticcurve.Point(ecdsa.SECP256k1.curve, x, y)
-    return ecdsa.VerifyingKey.from_public_point(p, ecdsa.SECP256k1)
-    

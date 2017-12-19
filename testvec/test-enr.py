@@ -2,10 +2,9 @@
 
 from .enr import ENR
 
-import ecdsa
+import coincurve
 
-privkey_hex = 'b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291'
-privkey = ecdsa.SigningKey.from_string(bytes.fromhex(privkey_hex), curve=ecdsa.SECP256k1)
+privkey = coincurve.PrivateKey.from_hex('b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291')
 
 def test_encode_decode():
     e = ENR().set('ip4', '127.0.0.1').set('discv5', 30303)

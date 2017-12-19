@@ -24,7 +24,7 @@ setup(
     version='0.1',
     packages=[],
     include_package_data=True,
-    install_requires=['ecdsa', 'pysha3', 'rlp', 'bitcoin'],
+    install_requires=['coincurve', 'pysha3', 'rlp'],
     license="MIT",
     zip_safe=False,
     cmdclass={'test': PyTest},
