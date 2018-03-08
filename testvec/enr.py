@@ -26,11 +26,10 @@ MAXSIZE = 300
 class SignatureError(BaseException): pass
 
 class ENR:
-    _kv, _sig, _raw = {}, None, None
-
     def __init__(self, seq=0):
         assert(isinstance(seq, int) and seq >= 0)
         self._seq = seq
+        self._kv, self._sig, self._raw = {}, None, None
 
     @property
     def seq(self):
@@ -70,10 +69,10 @@ class ENR:
         sig = privkey.sign_recoverable(sigdata, hasher=None)[0:64]
         rec = rlp.encode([sig] + content)
         return (sig, rec)
-    
+
     def _content(self):
         return [self._seq] + [e for kv in sorted(self._kv.items()) for e in kv]
-    
+
     def encode(self):
         if self._raw is None:
             raise 'no signature, call sign first'
@@ -118,7 +117,7 @@ class ENR:
         sigdata = sha3.keccak_256(rlp.encode(siglist)).digest()
         if not pubkey.verify(_signature_to_der(self._sig), sigdata, hasher=None):
             raise SignatureError('invalid signature')
-    
+
     def __str__(self):
         kv = {k: self.get(k) for k in sorted(self._kv.keys())}
         return '<ENR seq={} {}>'.format(self.seq, kv)
@@ -126,4 +125,3 @@ class ENR:
 def _signature_to_der(sig):
     csig = coincurve.ecdsa.deserialize_compact(sig)
     return coincurve.ecdsa.cdata_to_der(csig)
-
