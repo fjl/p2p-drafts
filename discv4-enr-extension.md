@@ -1,13 +1,13 @@
-# Preamble
-
-    EIP: 868
-    Title: Node Discovery v4 ENR Extension
-    Author: Felix Lange <fjl@ethereum.org>
-    Type: Standard Track
-    Category: Networking
-    Status: Draft
-    Created: 2018-02-02
-    Requires: EIP-8, EIP-778
+---
+eip: 868
+title: Node Discovery v4 ENR Extension
+author: Felix Lange <fjl@ethereum.org>
+type: Standards Track
+category: Networking
+status: Draft
+created: 2018-02-02
+requires: 8, 778
+---
 
 # Abstract
 

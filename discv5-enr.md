@@ -1,12 +1,12 @@
-# Preamble
-
-    EIP: 778
-    Title: Ethereum Node Records (ENR)
-    Author: Felix Lange <fjl@ethereum.org>
-    Type: Standard Track
-    Category Networking
-    Status: Draft
-    Created: 2017-05-17
+---
+eip: 778
+title: Ethereum Node Records (ENR)
+author: Felix Lange <fjl@ethereum.org>
+type: Standard Track
+category: Networking
+status: Draft
+created: 2017-11-23
+---
 
 # Abstract
 
@@ -36,12 +36,12 @@ be able to determine which record is newer.
 The components of a node record are:
 
 - `signature`: cryptographic signature of record contents
-- `seq`: A sequence number. Nodes should increase the number whenever the record changes
-   and republish the record.
+- `seq`: The sequence number, a 64 bit integer. Nodes should increase the number whenever
+   the record changes and republish the record.
 -  The remainder of the record consists of arbitrary key/value pairs, which must be sorted
    by key.
 
-A record's signature is made and validated according to an *identy scheme*. The identity
+A record's signature is made and validated according to an *identity scheme*. The identity
 scheme is also responsible for deriving a node's address in the DHT.
 
 ### RLP Encoding
@@ -58,13 +58,13 @@ Records are signed and encoded as follows:
 
 ### Key/Value Pairs
 
-Key/Value keys can be any byte sequence, but should be text. The following keys are
-pre-defined:
+The keys in key/value pairs can technically be any byte sequence, but ASCII text is
+preferred. The following keys are pre-defined:
 
 | Key          | Value                                            |
 |:-------------|:-------------------------------------------------|
 | `id`         | name of identity scheme, e.g. "secp256k1-keccak" |
-| `secp256k1`  | compressed secp256k1 public key                  |
+| `secp256k1`  | compressed secp256k1 public key, 33 bytes        |
 | `ip4`        | IPv4 address, 4 bytes                            |
 | `ip6`        | IPv6 address, 16 bytes                           |
 | `discv5`     | UDP port for discovery v5                        |
@@ -75,7 +75,7 @@ This specification defines a single scheme to be used as the default: "secp256k1
 
 - To sign record `content` with this scheme, apply the keccak256[^1] hash function to
   `content`, then create a signature of the hash. The resulting 64-byte signature is
-  encoded as the concatenation of `r` and `s`.
+  encoded as the concatenation of the `r` and `s` signature values.
 - To verify a record, check that the signature was made by the public key in the
   "secp256k1" key/value pair.
 - To derive a node address, take the keccak256 hash of the public key.
@@ -101,4 +101,3 @@ additional metadata.
 # Copyright
 
 Copyright and related rights waived via CC0.
-
