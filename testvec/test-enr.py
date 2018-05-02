@@ -7,7 +7,7 @@ import coincurve
 privkey = coincurve.PrivateKey.from_hex('b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291')
 
 def test_encode_decode():
-    e = ENR().set('ip4', '127.0.0.1').set('discv5', 30303)
+    e = ENR().set('ip', '127.0.0.1').set('udp', 30303)
     e.sign(privkey)
     enc = e.encode()
     print('Record:\n  ', e)

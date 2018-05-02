@@ -11,11 +11,15 @@ from rlp.utils import bytes_to_str
 
 # codecs for common properties
 KV_CODECS = {
-   'ip4': {
+   'ip': {
         'encode': socket.inet_aton,
         'decode': socket.inet_ntoa,
     },
-    'discv5': {
+    'udp': {
+        'encode': rlp.utils.int_to_big_endian,
+        'decode': rlp.utils.big_endian_to_int,
+    },
+    'tcp': {
         'encode': rlp.utils.int_to_big_endian,
         'decode': rlp.utils.big_endian_to_int,
     },
@@ -54,11 +58,13 @@ class ENR:
         del self._kv[k]
 
     def node_addr(self):
-        return sha3.keccak_256(self.get('secp256k1')).digest()
+        pubkey = coincurve.PublicKey(self.get('secp256k1'))
+        pubkey = pubkey.format(compressed=False)
+        return sha3.keccak_256(pubkey[1:]).digest()
 
     def sign(self, privkey):
         self._seq = self._seq + 1
-        self.set('id', 'secp256k1-keccak')
+        self.set('id', 'v4')
         self.set('secp256k1', privkey.public_key.format(compressed=True))
         self._sig, self._raw = self.sign_and_encode(privkey)
         return self
@@ -107,7 +113,7 @@ class ENR:
     def _check_signature(self, siglist):
         # check identity scheme
         scheme = self.get('id')
-        if scheme != b'secp256k1-keccak':
+        if scheme != b'v4':
             raise SignatureError('unsupported identity scheme "' + scheme + '"')
         pubkey = self.get('secp256k1')
         if len(pubkey) != 33:
