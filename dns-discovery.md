@@ -82,17 +82,18 @@ d8555522d5d0bf89  86400  IN    TXT   "enr=b'_<guQjUTCP{RqHWjGNW?LRl*ySR#tAhp%LQL
 
 To find nodes at a given DNS name, say "mynodes.org":
 
-1. Resolve the TXT record of "mynodes.org" and check whether it contains a
-   valid "enr-tree-root=v1" entry. Let's say the root hash contained in the
-   entry is "78019b5998661b1f".
+1. Resolve the TXT record of the name and check whether it contains a valid
+   "enr-tree-root=v1" entry. Let's say the root hash contained in the entry is
+   "78019b5998661b1f".
 2. Optionally verify the signature on the root against a known public key and
    check whether the sequence number is larger than or equal to any previous
    number seen for that name.
-3. Resolve the TXT record of the hash subdomain, e.g. "78019b5998661b1f.mynodes.org".
-   The next step depends on the entry type found:
-   - for `enr-tree`: parse the list of hashes and continue resolving those.
+3. Resolve the TXT record of the hash subdomain, e.g. "78019b5998661b1f.mynodes.org"
+   and verify whether the content matches the hash.
+4. The next step depends on the entry type found:
+   - for `enr-tree`: parse the list of hashes and continue resolving those (step 3).
    - for `enr`: decode, verify the node record and import it to local node storage.
-   - for `enr-tree-link`: continue traversal on the linked domain.
+   - for `enr-tree-link`: continue traversal on the linked domain (step 1).
 
 During traversal, the client should track hashes and domains which are already
 resolved to avoid going into an infinite loop.
