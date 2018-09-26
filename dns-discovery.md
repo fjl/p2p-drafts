@@ -47,7 +47,7 @@ where `roothash` is the root hash of the tree, a hexadecimal string of
 length 16. `seqnum` is a decimal integer and `signature` is a 65-byte secp256k1
 EC signature over the concatenation of the full root hash and `seqnum`.
 
-Further TXT records map abbreviated hashes to one of three types of value:
+Further TXT records map abbreviated hashes to one of three entry types:
 
 - `enr-tree=<h₁>,<h₂>,...,<hₙ>` is an intermediate tree containing further hashes.
 - `enr=<node-record>` is a leaf containing a node record. The node record shall be
