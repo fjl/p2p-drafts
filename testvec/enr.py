@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import rlp
-import socket
-import sha3
 import base64
 import coincurve
 import coincurve.ecdsa
-
-from rlp.utils import bytes_to_str
+import eth_utils
+import rlp
+import sha3
+import socket
 
 # codecs for common properties
 KV_CODECS = {
@@ -16,12 +15,12 @@ KV_CODECS = {
         'decode': socket.inet_ntoa,
     },
     'udp': {
-        'encode': rlp.utils.int_to_big_endian,
-        'decode': rlp.utils.big_endian_to_int,
+        'encode': eth_utils.int_to_big_endian,
+        'decode': eth_utils.big_endian_to_int,
     },
     'tcp': {
-        'encode': rlp.utils.int_to_big_endian,
-        'decode': rlp.utils.big_endian_to_int,
+        'encode': eth_utils.int_to_big_endian,
+        'decode': eth_utils.big_endian_to_int,
     },
 }
 
@@ -91,7 +90,7 @@ class ENR:
         assert(isinstance(elems, list))
         assert(len(elems) >= 2 and len(elems)%2 == 0)
 
-        seq = rlp.utils.big_endian_to_int(elems[1])
+        seq = eth_utils.big_endian_to_int(elems[1])
         e = cls(seq)
         e._raw, e._sig = data, elems[0]
         e._kv = cls._decode_kv(elems[2:])
@@ -103,7 +102,7 @@ class ENR:
         kv = {}
         prev = None
         for i in range(0, len(list), 2):
-            key = bytes_to_str(list[i])
+            key = eth_utils.to_text(list[i])
             if i > 0 and key < prev:
                 raise 'k/v keys are not sorted'
             kv[key] = list[i+1]
@@ -114,7 +113,7 @@ class ENR:
         # check identity scheme
         scheme = self.get('id')
         if scheme != b'v4':
-            raise SignatureError('unsupported identity scheme "' + scheme + '"')
+            raise SignatureError('unsupported identity scheme "' + str(scheme) + '"')
         pubkey = self.get('secp256k1')
         if len(pubkey) != 33:
             raise SignatureError('invalid public key length')
