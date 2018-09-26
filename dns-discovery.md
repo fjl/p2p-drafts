@@ -56,7 +56,7 @@ Further TXT records on subdomains map abbreviated hashes to one of three entry t
   another fully qualified domain name. The subdomain name of an `enr-tree-link`
   entry is the hash of its text content.
 - `enr=<node-record>` is a leaf containing a node record [as defined in
-  EIP-778][eip-778] . The node record shall be encoded as a base85 string. The
+  EIP-778][eip-778]. The node record shall be encoded as a base85 string. The
   subdomain name for an `enr` entry is the abbreviated hash of the raw node
   record RLP.
 
