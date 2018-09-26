@@ -42,8 +42,8 @@ of the tree is a record with content:
 
     enr-tree-root=v1 hash=<roothash> seq=<seqnum> sig=<signature>
 
-where `roothash` is the abbreviated root hash of the tree, a hexadecimal string
-of length 16. `seqnum` is the tree's update sequence number, a decimal integer.
+`roothash` is the abbreviated root hash of the tree, a hexadecimal string of
+length 16. `seqnum` is the tree's update sequence number, a decimal integer.
 `signature` is a 65-byte secp256k1 EC signature over the concatenation of the
 full root hash and `seqnum`, encoded as a base85 string.
 
