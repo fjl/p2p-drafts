@@ -16,10 +16,10 @@ Ethereum node lists retrievable via DNS.
 
 # Motivation
 
-All known Ethereum clients contain hard-coded bootstrap node lists. Updating
-those lists requires a software update. The current lists are small, giving the
-client little choice of initial entry point into the Ethereum network. We would
-like to maintain larger node lists containing hundreds of nodes, and update them
+Many Ethereum clients contain hard-coded bootstrap node lists. Updating those
+lists requires a software update. The current lists are small, giving the client
+little choice of initial entry point into the Ethereum network. We would like to
+maintain larger node lists containing hundreds of nodes, and update them
 regularly.
 
 The scheme described here is a replacement for client bootstrap node lists with
@@ -43,11 +43,11 @@ The root of the tree is a record with content
 
     enr-tree-root=v1 hash=<roothash> seq=<seqnum> sig=<signature>
 
-where `roothash` is the root hash of the tree, a hexadecimal string of length
-8, `seqnum` is a decimal integer and `signature` is a 65-byte secp256k1 EC
-signature over the concatenation of `roothash` and `seqnum`.
+where `roothash` is the root hash of the tree, a hexadecimal string of
+length 16. `seqnum` is a decimal integer and `signature` is a 65-byte secp256k1
+EC signature over the concatenation of the full root hash and `seqnum`.
 
-Further TXT records map hashes to one of three types of value:
+Further TXT records map abbreviated hashes to one of three types of value:
 
 - `enr-tree=<h₁>,<h₂>,...,<hₙ>` is an intermediate tree containing further hashes.
 - `enr=<node-record>` is a leaf containing a node record. The node record shall be
