@@ -55,9 +55,12 @@ Further TXT records on subdomains map abbreviated hashes to one of three entry t
 - `enr-tree-link=<fqdn>` is a leaf pointing to a different list located at
   another fully qualified domain name. The subdomain name of an `enr-tree-link`
   entry is the hash of its text content.
-- `enr=<node-record>` is a leaf containing a node record. The node record shall
-  be encoded as a base85 string. The subdomain name for an `enr` entry is the
-  abbreviated hash of the raw node record RLP.
+- `enr=<node-record>` is a leaf containing a node record [as defined in
+  EIP-778][eip-778] . The node record shall be encoded as a base85 string. The
+  subdomain name for an `enr` entry is the abbreviated hash of the raw node
+  record RLP.
+
+[eip-778]: https://eips.ethereum.org/EIPS/eip-778
 
 No particular ordering or structure is defined for the tree, but the content of
 any TXT record should be small enough to fit into the 512 byte limit imposed on
