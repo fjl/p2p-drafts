@@ -105,25 +105,24 @@ resolved to avoid going into an infinite loop.
 We have chosen DNS as the distribution medium because it is always available,
 even under restrictive network conditions. The protocol provides low latency and
 answers to DNS queries can be cached by intermediate resolvers. No custom server
-software is needed, the tree can be deployed to any DNS provider such as
+software is needed. Node lists can be deployed to any DNS provider such as
 CloudFlare DNS, dnsimple, Amazon Route 53 using their respective client
 libraries.
 
 ### Why is this a merkle tree?
 
-Being merkle trees, node lists can be authenticated by a single signature on the
-root. Synchronizing updates to the list can be done incrementally and is
-bandwidth-efficient, which matters for large lists. Individual entries of the
-tree are small enough to fit into a single UDP packet, ensuring compatibility
-with environments where only basic UDP DNS is available.
-
-The tree format also works well with caching resolvers: only the root of the
-needs a short TTL. Intermediate entries and leaves can be cached for days.
-
-Hash subdomains protect the integrity of the list even without DNSSEC. At worst,
+Being a merkle tree, any node list can be authenticated by a single signature on
+the root. Hash subdomains protect the integrity of the list. At worst
 intermediate resolvers can block access to the list or disallow updates to it,
 but cannot corrupt its content. The sequence number prevents replacing the root
 with an older version.
+
+Synchronizing updates on the client side can be done incrementally, which
+matters for large lists. Individual entries of the tree are small enough to fit
+into a single UDP packet, ensuring compatibility with environments where only
+basic UDP DNS is available. The tree format also works well with caching
+resolvers: only the root of the tree needs a short TTL. Intermediate entries and
+leaves can be cached for days.
 
 ### Why does `enr-tree-link` exist?
 
