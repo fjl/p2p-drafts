@@ -77,12 +77,13 @@ increase.
 
 To find nodes at a given DNS name, say "nodes.example.org":
 
-1. Resolve the TXT record of "nodes.example.org" and check whether it contains a valid
-   "enr-tree-root=v1" entry. Let's say the root hash contained in the entry is "30b2f4".
+1. Resolve the TXT record of "nodes.example.org" and check whether it contains a
+   valid "enr-tree-root=v1" entry. Let's say the root hash contained in the
+   entry is "78019b5998661b1f".
 2. Optionally verify the signature on the root against a known public key and
    check whether the sequence number is larger than or equal to any previous
    number seen for that name.
-3. Resolve TXT record of the hash, "30b2f4.nodes.example.org". The next step
+3. Resolve TXT record of the hash, "78019b5998661b1f.nodes.example.org". The next step
    depends on the string prefix of the record:
    - for `"enr-tree="`: parse the list of hashes and continue resolving those.
    - for `"enr="`: decode, verify the node record and import it to local node storage.
