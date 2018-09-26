@@ -45,7 +45,7 @@ of the tree is a record with content:
 where `roothash` is the abbreviated root hash of the tree, a hexadecimal string
 of length 16. `seqnum` is the tree's update sequence number, a decimal integer.
 `signature` is a 65-byte secp256k1 EC signature over the concatenation of the
-full root hash and `seqnum`, encoded as a hexadecimal string.
+full root hash and `seqnum`, encoded as a base85 string.
 
 Further TXT records on subdomains map abbreviated hashes to one of three entry types:
 
@@ -71,10 +71,10 @@ Example in zone file format:
 
 ```text
 ; name            ttl    class type  content
-@                 60     IN    TXT   "enr-tree-root=v1 hash=78019b5998661b1f seq=3 sig=76d9f2f2f66b415868768302b8824fde9afb28869cdb5e4dab967bff5013657c0a73830f34c1457691d3a3a002cee3bad4d455bb4b9e11941c447fab767f27cf01"
+@                 60     IN    TXT   "enr-tree-root=v1 hash=78019b5998661b1f seq=3 sig=cG>ds_G>{{Xm*1FxPnjKn)@h*oZDVatCoBJP!nZ*3Uh-GG{Hr7k<+7~0?y;Q)YMhGOP&#w97KPsc7G?&0R"
 78019b5998661b1f  86400  IN    TXT   "enr-tree=d8555522d5d0bf89,4a89cf04b0aee42d,5b378d39913b1f93"
-d8555522d5d0bf89  86400  IN    TXT   "enr=b'_<guQjUTCP{RqHWjGNW?LRl*ySR#tAhp%LQL3m%l>?Y;TWG<eXes@Z`*$>0`ztySi++YoiEfGsM%?UAj#)fmH0fK2{f_5~5X>f$g0C53{b7f<2GBq}9F`)y>V@$3MNvyO1*rdj`{)|<(4G~-P0Ct?gKo2rl%`rF'"
-4a89cf04b0aee42d  86400  IN    TXT   "enr=b'_<guQI<5l3<MLpP%$R(Ut$~G6VBUTe_2<DP7@AynC@+0)M3P>A=|HjLA-MoVR+B&Rn&O{CUb#id6R~XaJiQj&0fK2{f_5~5X>f$bGh}0lb7f<2GBq}9F`)wOd@Tj%lD4x~phg<p>jjtP)0mE_TKMaV2tv>IW4Dk'"
+d8555522d5d0bf89  86400  IN    TXT   "enr=_<guQjUTCP{RqHWjGNW?LRl*ySR#tAhp%LQL3m%l>?Y;TWG<eXes@Z`*$>0`ztySi++YoiEfGsM%?UAj#)fmH0fK2{f_5~5X>f$g0C53{b7f<2GBq}9F`)y>V@$3MNvyO1*rdj`{)|<(4G~-P0Ct?gKo2rl%`rF"
+4a89cf04b0aee42d  86400  IN    TXT   "enr=_<guQI<5l3<MLpP%$R(Ut$~G6VBUTe_2<DP7@AynC@+0)M3P>A=|HjLA-MoVR+B&Rn&O{CUb#id6R~XaJiQj&0fK2{f_5~5X>f$bGh}0lb7f<2GBq}9F`)wOd@Tj%lD4x~phg<p>jjtP)0mE_TKMaV2tv>IW4Dk"
 5b378d39913b1f93  86400  IN    TXT   "enr-tree-link=morenodes.example.org"
 ```
 
