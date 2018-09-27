@@ -68,7 +68,7 @@ class Tree():
                 new_entries[h] = e
                 continue
             # need this entry, resolve
-            e = _resolveEntry(resolver, h + '.' + name)
+            e = _resolveEntry(resolver, h + '.' + name, h)
             if isinstance(e, subtreeEntry):
                 new_entries[h] = e
                 for d in e.subdomains:
@@ -83,9 +83,9 @@ class Tree():
         rc = ['{:20}   86900   IN    TXT   "{}"'.format(e.subdomain(), e.text()) for e in self.entries.values()]
         return '\n'.join(rr + rc)
 
-def _resolveEntry(resolver, name):
+def _resolveEntry(resolver, name, hash=None):
     for txt in resolver.resolveTXT(name):
-        e = parse_entry(txt)
+        e = parse_entry(txt, hash)
         if e is not None:
             return e
     raise 'no entry found at ' + name
@@ -184,7 +184,9 @@ class rootEntry(entry):
             raise ParseError('invalid signature length')
         return cls(roothash, seq, sig)
 
-def parse_entry(txt):
+def parse_entry(txt, hash=None):
+    if hash != None and not _verify_hash(txt, hash):
+        raise ParseError('hash of entry {} doesn\'t match "{}"'.format(hash, txt))
     if txt.startswith(rootEntry.prefix):
         return rootEntry.parse(txt)
     elif txt.startswith(subtreeEntry.prefix):
@@ -195,6 +197,9 @@ def parse_entry(txt):
         return linkEntry.parse(txt)
     else:
         return None
+
+def _verify_hash(txt, hash):
+    return sha3.keccak_256(txt.encode()).digest().hex().startswith(hash)
 
 class ParseError(BaseException):
     pass
