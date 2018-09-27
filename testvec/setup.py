@@ -24,7 +24,7 @@ setup(
     version='0.1',
     packages=[],
     include_package_data=True,
-    install_requires=['coincurve', 'pysha3', 'rlp', 'eth_utils', 'dnspython'],
+    install_requires=['coincurve', 'pysha3', 'rlp', 'eth_utils<2', 'dnspython'],
     license="MIT",
     zip_safe=False,
     cmdclass={'test': PyTest},
