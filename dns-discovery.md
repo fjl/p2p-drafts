@@ -44,21 +44,19 @@ of the tree is a record with content:
 
 `roothash` is the abbreviated root hash of the tree, a hexadecimal string of
 length 16. `seqnum` is the tree's update sequence number, a decimal integer.
-`signature` is a 65-byte secp256k1 EC signature over the concatenation of the
-full root hash and `seqnum`, encoded as a base85 string.
+`signature` is a 65-byte secp256k1 EC signature over the keccak256 hash of the
+record content.
 
-Further TXT records on subdomains map abbreviated hashes to one of three entry types:
+Further TXT records on subdomains map hashes to one of three entry types. The
+subdomain name of any entry is the abbreviated keccak256 hash of its text
+content.
 
 - `enr-tree=<h₁>,<h₂>,...,<hₙ>` is an intermediate tree containing further hash
-  subdomains. The subdomain name of an `enr-tree` entry is the hash of its text
-  content.
+  subdomains.
 - `enr-tree-link=<fqdn>` is a leaf pointing to a different list located at
-  another fully qualified domain name. The subdomain name of an `enr-tree-link`
-  entry is the hash of its text content.
+  another fully qualified domain name.
 - `enr=<node-record>` is a leaf containing a node record [as defined in
-  EIP-778][eip-778]. The node record shall be encoded as a base85 string. The
-  subdomain name for an `enr` entry is the abbreviated hash of the raw node
-  record RLP.
+  EIP-778][eip-778]. The node record shall be encoded as a base85 string.
 
 [eip-778]: https://eips.ethereum.org/EIPS/eip-778
 
