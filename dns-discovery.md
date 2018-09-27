@@ -130,3 +130,7 @@ Links between lists enable federation and web-of-trust functionality. The
 operator of a large list can delegate maintenance to other list providers. If
 two node lists link to each other, users can use either list and get nodes from
 both.
+
+# Copyright
+
+Copyright and related rights waived via CC0.
