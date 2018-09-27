@@ -13,7 +13,7 @@ from enr import ENR
 class SystemResolver():
     def resolveTXT(self, name):
         answers = dns.resolver.query(name, 'TXT')
-        return [''.join(rdata.strings) for rdata in answers]
+        return [b''.join(rdata.strings).decode() for rdata in answers]
 
 # The Tree
 
