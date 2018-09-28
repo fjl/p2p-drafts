@@ -204,16 +204,10 @@ class rootEntry(entry):
         return cls(roothash, seq, sig)
 
 def _parse_entry(txt, hash=None):
-    if txt.startswith(rootEntry.prefix):
-        return rootEntry.parse(txt)
-    elif txt.startswith(subtreeEntry.prefix):
-        return subtreeEntry.parse(txt)
-    elif txt.startswith(enrEntry.prefix):
-        return enrEntry.parse(txt)
-    elif txt.startswith(linkEntry.prefix):
-        return linkEntry.parse(txt)
-    else:
-        return None
+    for typ in [rootEntry, subtreeEntry, enrEntry, linkEntry]:
+        if txt.startswith(typ.prefix):
+            return typ.parse(txt)
+    return None
 
 def _resolveEntry(resolver, name, hash=None):
     for txt in resolver.resolveTXT(name):
