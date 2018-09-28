@@ -57,7 +57,7 @@ hash of its text content.
   another fully qualified domain name. The `key`, a base32 encoded secp256k1
   public key, is the expected signer of the list.
 - `enr=<node-record>` is a leaf containing a node record [as defined in EIP-778][eip-778].
-  The node record shall be encoded as a URL-safe base64 string.
+  The node record is encoded as a URL-safe base64 string.
 
 No particular ordering or structure is defined for the tree. Whenever the tree
 is updated, its sequence number should increase. The content of any TXT record
