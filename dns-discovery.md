@@ -136,7 +136,7 @@ basic UDP DNS is available. The tree format also works well with caching
 resolvers: only the root of the tree needs a short TTL. Intermediate entries and
 leaves can be cached for days.
 
-### Why does `enr-tree-link` exist?
+### Why does `enrtree-link` exist?
 
 Links between lists enable federation and web-of-trust functionality. The
 operator of a large list can delegate maintenance to other list providers. If
