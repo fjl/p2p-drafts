@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import base64
+import coincurve
 import dns.resolver
 import re
 import rlp
 import sha3
-from collections import OrderedDict
+
+from coincurve import PublicKey
 from enr import ENR
 
 # Resolvers
@@ -13,8 +15,12 @@ from enr import ENR
 class SystemResolver():
     def resolveTXT(self, name):
         # print('Resolving ' + name)
-        answers = dns.resolver.query(name, 'TXT')
-        return [b''.join(rdata.strings).decode() for rdata in answers]
+        try:
+            answers = dns.resolver.query(name, 'TXT')
+        except dns.resolver.NXDOMAIN:
+            return []
+        else:
+            return [b''.join(rdata.strings).decode() for rdata in answers]
 
 # URLs
 
@@ -25,12 +31,12 @@ def encode_url(domain, pubkey):
 def decode_url(url):
     m = re.match('^enrtree://([a-zA-Z0-9]+)@([^\\s]+)$', url)
     if m == None:
-        raise ParseError('invalid enrtree URL ' + url)
+        raise ParseError('invalid enrtree URL: ' + url)
     host = m.group(2)
     try:
-        pubkey = from_base32(m.group(1))
-    except Exception:
-        raise ParseError('invalid public key in URL ' + url)
+        pubkey = PublicKey(from_base32(m.group(1)))
+    except ValueError as e:
+        raise ParseError('invalid public key in {}: {}'.format(url, e))
     return (host, pubkey)
 
 # The Tree
@@ -59,48 +65,48 @@ class Tree():
         self.root.sign(privkey)
         return self
 
+    def records(self):
+        for e in self.entries.values():
+            if isinstance(e, enrEntry):
+                yield e.enr
+
+    def links(self):
+        for e in self.entries.values():
+            if isinstance(e, linkEntry):
+                yield encode_url(e.name, e.pubkey)
+
     @classmethod
-    def resolve(cls, name, resolver=SystemResolver()):
+    def resolve(cls, url, resolver=SystemResolver()):
         tree = cls.__new__(cls)
         tree.entries, tree.root = {}, None
-        tree.resolve_updates(name, resolver)
+        tree.resolve_updates(url, resolver)
         return tree
 
-    def resolve_updates(self, name, resolver=SystemResolver()):
-        e = _resolveEntry(resolver, name)
-        if isinstance(e, rootEntry):
-            if self.root is None or e.roothash != self.root.roothash:
-                self._resolve_missing(name, e.roothash, resolver)
-                self.root = e
-        else:
-            raise RuntimeError('no tree found')
+    def resolve_updates(self, url, resolver=SystemResolver()):
+        name, pubkey = decode_url(url)
+        e = _resolveRoot(resolver, name, pubkey)
+        if self.root is None or e.roothash != self.root.roothash:
+            self._resolve_missing(name, e.roothash, resolver)
+            self.root = e
 
     def _resolve_missing(self, name, roothash, resolver):
-        want = OrderedDict()
-        want[roothash] = True
+        want = {roothash}
         new_entries = {}
         while len(want) > 0:
-            h, _ = want.popitem(False)
+            h = want.pop()
             if h in self.entries:
+                # found in local tree, copy it over
                 new_entries[h] = self.entries[h]
                 continue
             # need this entry, resolve
             e = _resolveEntry(resolver, h + '.' + name, h)
             if isinstance(e, subtreeEntry):
                 new_entries[h] = e
-                for d in e.subdomains:
-                    want[d] = True
+                want |= set(e.subdomains)
             elif isinstance(e, enrEntry) or isinstance(e, linkEntry):
                 new_entries[h] = e
         # done, set new entries
         self.entries = new_entries
-
-def _resolveEntry(resolver, name, hash=None):
-    for txt in resolver.resolveTXT(name):
-        e = parse_entry(txt, hash)
-        if e is not None:
-            return e
-    raise 'no entry found at ' + name
 
 # Tree Entries
 
@@ -136,7 +142,8 @@ class linkEntry(entry):
         self.name, self.pubkey = decode_url(url)
 
     def text(self):
-        return '{}{}@{}'.format(linkEntry.prefix, to_base32(self.pubkey), self.name)
+        key = to_base32(self.pubkey.format(compressed=True))
+        return '{}{}@{}'.format(linkEntry.prefix, key, self.name)
 
     @classmethod
     def parse(cls, txt):
@@ -164,11 +171,13 @@ class rootEntry(entry):
         self.sig = sig
 
     def sign(self, privkey):
-        sighash = sha3.keccak_256(self.signed_text().encode()).digest()
-        self.sig = privkey.sign_recoverable(sighash, hasher=None)
+        self.sig = privkey.sign_recoverable(self.hash(), hasher=None)
 
     def subdomain(self):
         return ''
+
+    def hash(self):
+        return sha3.keccak_256(self.signed_text().encode()).digest()
 
     def text(self):
         if self.sig is None:
@@ -194,9 +203,7 @@ class rootEntry(entry):
             raise ParseError('invalid signature length')
         return cls(roothash, seq, sig)
 
-def parse_entry(txt, hash=None):
-    if hash != None and not _verify_hash(txt, hash):
-        raise ParseError('hash of entry {} doesn\'t match "{}"'.format(hash, txt))
+def _parse_entry(txt, hash=None):
     if txt.startswith(rootEntry.prefix):
         return rootEntry.parse(txt)
     elif txt.startswith(subtreeEntry.prefix):
@@ -208,15 +215,35 @@ def parse_entry(txt, hash=None):
     else:
         return None
 
-def _verify_hash(txt, hash):
+def _resolveEntry(resolver, name, hash=None):
+    for txt in resolver.resolveTXT(name):
+        e = _parse_entry(txt, hash)
+        if e is not None:
+            _verify_hash(txt, name, hash)
+            return e
+    raise RuntimeError('no enrtree entry found at ' + name)
+
+def _verify_hash(txt, name, hash):
     full = sha3.keccak_256(txt.encode()).digest()
     prefix = from_base32(hash)
-    return full.startswith(prefix)
+    if not full.startswith(prefix):
+        raise VerifyError('invalid entry at {} doesn\'t match hash'.format(name, full.hex()))
 
-class ParseError(BaseException):
-    pass
+def _resolveRoot(resolver, name, pubkey):
+    for txt in resolver.resolveTXT(name):
+        e = _parse_entry(txt, hash)
+        if isinstance(e, rootEntry):
+            sig = _recoverable_to_der(e.sig)
+            if sig is not None and pubkey.verify(sig, e.hash(), hasher=None):
+                return e
+            else:
+                raise VerifyError('invalid signature in enrtree root at ' + name)
+    raise RuntimeError('no enrtree root found at ' + name)
 
-# Base32 Helpers
+class ParseError(ValueError): pass
+class VerifyError(ValueError): pass
+
+# Base32, Crypto Helpers
 
 def to_base32(b):
     enc = base64.b32encode(b).decode()
@@ -226,3 +253,10 @@ def from_base32(s):
     if len(s) % 8: # add padding if needed
         s += ('=' * (8 - len(s) % 8))
     return base64.b32decode(s)
+
+def _recoverable_to_der(sig):
+    try:
+        sig = coincurve.ecdsa.deserialize_recoverable(sig)
+    except ValueError:
+        return None
+    return coincurve.ecdsa.cdata_to_der(coincurve.ecdsa.recoverable_convert(sig))
