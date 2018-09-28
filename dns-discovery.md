@@ -148,6 +148,8 @@ both.
 1. The base64 and base32 encodings used to represent binary data are defined in
    RFC 4648 (https://tools.ietf.org/html/rfc4648). No padding is used for base32.
 
+[eip-778]: https://eips.ethereum.org/EIPS/eip-778
+
 # Copyright
 
 Copyright and related rights waived via CC0.
