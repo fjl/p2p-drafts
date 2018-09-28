@@ -2,7 +2,7 @@
 eip: XXX
 title: Node Discovery via DNS
 author: Felix Lange <fjl@ethereum.org>, Péter Szilágyi <peter@ethereum.org>
-type: Informational
+type: Standards Track
 category: Networking
 status: Draft
 created: 2018-09-26
