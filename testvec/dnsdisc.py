@@ -12,8 +12,26 @@ from enr import ENR
 
 class SystemResolver():
     def resolveTXT(self, name):
+        # print('Resolving ' + name)
         answers = dns.resolver.query(name, 'TXT')
         return [b''.join(rdata.strings).decode() for rdata in answers]
+
+# URLs
+
+def encode_url(domain, pubkey):
+    user = to_base32(pubkey.format(compressed=True))
+    return "enrtree://{}@{}".format(user, domain)
+
+def decode_url(url):
+    m = re.match('^enrtree://([a-zA-Z0-9]+)@([^\\s]+)$', url)
+    if m == None:
+        raise ParseError('invalid enrtree URL ' + url)
+    host = m.group(2)
+    try:
+        pubkey = from_base32(m.group(1))
+    except Exception:
+        raise ParseError('invalid public key in URL ' + url)
+    return (host, pubkey)
 
 # The Tree
 
@@ -24,13 +42,6 @@ class Tree():
         self.entries = {e.subdomain(): e for e in entries + leaves}
         roothash = entries[0].subdomain()
         self.root = rootEntry(roothash, seq, None)
-
-    @classmethod
-    def with_root(cls, root):
-        tree = cls.__new__(cls)
-        tree.root = root
-        tree.entries = {}
-        return tree
 
     def _build(self, entries):
         if len(entries) <= _MAX_INTERMEDIATE_HASHES:
@@ -50,22 +61,28 @@ class Tree():
 
     @classmethod
     def resolve(cls, name, resolver=SystemResolver()):
-        e = _resolveEntry(resolver, name)
-        if isinstance(e, rootEntry):
-            tree = cls.with_root(e)
-            tree.resolve_updates(name, resolver)
-            return tree
-        else:
-            raise 'no tree found'
+        tree = cls.__new__(cls)
+        tree.entries, tree.root = {}, None
+        tree.resolve_updates(name, resolver)
+        return tree
 
     def resolve_updates(self, name, resolver=SystemResolver()):
+        e = _resolveEntry(resolver, name)
+        if isinstance(e, rootEntry):
+            if self.root is None or e.roothash != self.root.roothash:
+                self._resolve_missing(name, e.roothash, resolver)
+                self.root = e
+        else:
+            raise RuntimeError('no tree found')
+
+    def _resolve_missing(self, name, roothash, resolver):
         want = OrderedDict()
-        want[self.root.roothash] = True
+        want[roothash] = True
         new_entries = {}
         while len(want) > 0:
             h, _ = want.popitem(False)
             if h in self.entries:
-                new_entries[h] = e
+                new_entries[h] = self.entries[h]
                 continue
             # need this entry, resolve
             e = _resolveEntry(resolver, h + '.' + name, h)
@@ -78,11 +95,6 @@ class Tree():
         # done, set new entries
         self.entries = new_entries
 
-    def to_zonefile(self):
-        rr = ['{:20}   60      IN    TXT   "{}"'.format('@', self.root.text())]
-        rc = ['{:20}   86900   IN    TXT   "{}"'.format(e.subdomain(), e.text()) for e in self.entries.values()]
-        return '\n'.join(rr + rc)
-
 def _resolveEntry(resolver, name, hash=None):
     for txt in resolver.resolveTXT(name):
         e = parse_entry(txt, hash)
@@ -92,15 +104,15 @@ def _resolveEntry(resolver, name, hash=None):
 
 # Tree Entries
 
-_HASH_ABBREV = 8
-_MAX_INTERMEDIATE_HASHES = round(300 / (_HASH_ABBREV*2))
+_HASH_ABBREV = 16
+_MAX_INTERMEDIATE_HASHES = round(300 / (_HASH_ABBREV * (13/8)))
 
 class entry():
     def hash(self):
         return sha3.keccak_256(self.text().encode()).digest()
 
     def subdomain(self):
-        return self.hash()[:_HASH_ABBREV].hex()
+        return to_base32(self.hash()[:_HASH_ABBREV])
 
 class enrEntry(entry):
     prefix = 'enr='
@@ -110,28 +122,28 @@ class enrEntry(entry):
 
     def text(self):
         enc = self.enr.encode()
-        return enrEntry.prefix + base64.b85encode(enc).decode()
+        return enrEntry.prefix + base64.urlsafe_b64encode(enc).decode()
 
     @classmethod
     def parse(cls, txt):
-        raw = base64.b85decode(txt[len(cls.prefix):])
+        raw = base64.urlsafe_b64decode(txt[len(cls.prefix):])
         return cls(ENR.from_rlp(raw))
 
 class linkEntry(entry):
-    prefix = 'enr-tree-link='
+    prefix = 'enrtree-link='
 
-    def __init__(self, link):
-        self.link = link
+    def __init__(self, url):
+        self.name, self.pubkey = decode_url(url)
 
     def text(self):
-        return linkEntry.prefix + self.link
+        return '{}{}@{}'.format(linkEntry.prefix, to_base32(self.pubkey), self.name)
 
     @classmethod
     def parse(cls, txt):
-        return cls(txt[len(cls.prefix):])
+        return cls('enrtree://' + txt[len(cls.prefix):])
 
 class subtreeEntry(entry):
-    prefix = 'enr-tree='
+    prefix = 'enrtree='
 
     def __init__(self, subdomains):
         self.subdomains = subdomains
@@ -144,7 +156,7 @@ class subtreeEntry(entry):
         return cls(txt[len(cls.prefix):].split(','))
 
 class rootEntry(entry):
-    prefix = 'enr-tree-root=v1'
+    prefix = 'enrtree-root=v1'
 
     def __init__(self, roothash, seq, sig):
         self.seq = seq
@@ -161,13 +173,13 @@ class rootEntry(entry):
     def text(self):
         if self.sig is None:
             raise RuntimeError('tree is not signed')
-        sig = base64.b85encode(self.sig).decode()
+        sig = base64.urlsafe_b64encode(self.sig).decode()
         return self.signed_text() + ' sig=' + sig
 
     def signed_text(self):
         return '{} hash={} seq={}'.format(rootEntry.prefix, self.roothash, self.seq)
 
-    pattern = re.compile(re.escape(prefix) + ' hash=([0-9a-fA-F]{16}) seq=([0-9]+) sig=(.+)')
+    pattern = re.compile('^' + re.escape(prefix) + ' hash=([0-9a-zA-Z]{10,}) seq=([0-9]+) sig=(.+)$')
 
     @classmethod
     def parse(cls, txt):
@@ -175,11 +187,9 @@ class rootEntry(entry):
         try:
             roothash = m.group(1)
             seq = int(m.group(2))
-            sig = base64.b85decode(m.group(3))
+            sig = base64.urlsafe_b64decode(m.group(3))
         except Exception:
             raise ParseError('invalid tree root ' + txt)
-        if len(roothash) != 16:
-            raise ParseError('invalid root hash length')
         if len(sig) != 65:
             raise ParseError('invalid signature length')
         return cls(roothash, seq, sig)
@@ -199,7 +209,20 @@ def parse_entry(txt, hash=None):
         return None
 
 def _verify_hash(txt, hash):
-    return sha3.keccak_256(txt.encode()).digest().hex().startswith(hash)
+    full = sha3.keccak_256(txt.encode()).digest()
+    prefix = from_base32(hash)
+    return full.startswith(prefix)
 
 class ParseError(BaseException):
     pass
+
+# Base32 Helpers
+
+def to_base32(b):
+    enc = base64.b32encode(b).decode()
+    return enc.rstrip('=') # remove padding
+
+def from_base32(s):
+    if len(s) % 8: # add padding if needed
+        s += ('=' * (8 - len(s) % 8))
+    return base64.b32decode(s)

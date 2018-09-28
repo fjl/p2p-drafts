@@ -40,40 +40,54 @@ DHT.
 Node lists are encoded as TXT records. The records form a merkle tree. The root
 of the tree is a record with content:
 
-    enr-tree-root=v1 hash=<roothash> seq=<seqnum> sig=<signature>
+    enrtree-root=v1 hash=<roothash> seq=<seqnum> sig=<signature>
 
-`roothash` is the abbreviated root hash of the tree, a hexadecimal string of
-length 16. `seqnum` is the tree's update sequence number, a decimal integer.
-`signature` is a 65-byte secp256k1 EC signature over the keccak256 hash of the
-record content.
+`roothash` is the abbreviated root hash of the tree in base32 encoding. `seqnum`
+is the tree's update sequence number, a decimal integer. `signature` is a
+65-byte secp256k1 EC signature over the keccak256 hash of the record content,
+encoded as URL-safe base64.
 
 Further TXT records on subdomains map hashes to one of three entry types. The
-subdomain name of any entry is the abbreviated keccak256 hash of its text
-content.
+subdomain name of any entry is the base32 encoding of the abbreviated keccak256
+hash of its text content.
 
-- `enr-tree=<h₁>,<h₂>,...,<hₙ>` is an intermediate tree containing further hash
+- `enrtree=<h₁>,<h₂>,...,<hₙ>` is an intermediate tree containing further hash
   subdomains.
-- `enr-tree-link=<fqdn>` is a leaf pointing to a different list located at
-  another fully qualified domain name.
-- `enr=<node-record>` is a leaf containing a node record [as defined in
-  EIP-778][eip-778]. The node record shall be encoded as a base85 string.
+- `enrtree-link=<key>@<fqdn>` is a leaf pointing to a different list located at
+  another fully qualified domain name. The `key`, a base32 encoded secp256k1
+  public key, is the expected signer of the list.
+- `enr=<node-record>` is a leaf containing a node record [as defined in EIP-778][eip-778].
+  The node record shall be encoded as a URL-safe base64 string.
 
-[eip-778]: https://eips.ethereum.org/EIPS/eip-778
-
-No particular ordering or structure is defined for the tree, but the content of
-any TXT record should be small enough to fit into the 512 byte limit imposed on
-UDP DNS packets. Whenever the tree is updated, its sequence number should
-increase.
+No particular ordering or structure is defined for the tree. Whenever the tree
+is updated, its sequence number should increase. The content of any TXT record
+should be small enough to fit into the 512 byte limit imposed on UDP DNS
+packets. This limits the number of hashes that can be placed into a `enrtree=`
+entry.
 
 Example in zone file format:
 
 ```text
-; name            ttl    class type  content
-@                 60     IN    TXT   "enr-tree-root=v1 hash=78019b5998661b1f seq=3 sig=cG>ds_G>{{Xm*1FxPnjKn)@h*oZDVatCoBJP!nZ*3Uh-GG{Hr7k<+7~0?y;Q)YMhGOP&#w97KPsc7G?&0R"
-78019b5998661b1f  86400  IN    TXT   "enr-tree=d8555522d5d0bf89,4a89cf04b0aee42d,5b378d39913b1f93"
-d8555522d5d0bf89  86400  IN    TXT   "enr=_<guQjUTCP{RqHWjGNW?LRl*ySR#tAhp%LQL3m%l>?Y;TWG<eXes@Z`*$>0`ztySi++YoiEfGsM%?UAj#)fmH0fK2{f_5~5X>f$g0C53{b7f<2GBq}9F`)y>V@$3MNvyO1*rdj`{)|<(4G~-P0Ct?gKo2rl%`rF"
-4a89cf04b0aee42d  86400  IN    TXT   "enr=_<guQI<5l3<MLpP%$R(Ut$~G6VBUTe_2<DP7@AynC@+0)M3P>A=|HjLA-MoVR+B&Rn&O{CUb#id6R~XaJiQj&0fK2{f_5~5X>f$bGh}0lb7f<2GBq}9F`)wOd@Tj%lD4x~phg<p>jjtP)0mE_TKMaV2tv>IW4Dk"
-5b378d39913b1f93  86400  IN    TXT   "enr-tree-link=morenodes.example.org"
+; name                        ttl     class type  content
+@                             60      IN    TXT   "enrtree-root=v1 hash=TO4Q75OQ2N7DX4EOOR7X66A6OM seq=3 sig=N-YY6UB9xD0hFx1Gmnt7v0RfSxch5tKyry2SRDoLx7B4GfPXagwLxQqyf7gAMvApFn_ORwZQekMWa_pXrcGCtwE="
+TO4Q75OQ2N7DX4EOOR7X66A6OM    86900   IN    TXT   "enrtree=F4YWVKW4N6B2DDZWFS4XCUQBHY,JTNOVTCP6XZUMXDRANXA6SWXTM,JGUFMSAGI7KZYB3P7IZW4S5Y3A"
+F4YWVKW4N6B2DDZWFS4XCUQBHY    86900   IN    TXT   "enr=-H24QI0fqW39CMBZjJvV-EJZKyBYIoqvh69kfkF4X8DsJuXOZC6emn53SrrZD8P4v9Wp7NxgDYwtEUs3zQkxesaGc6UBgmlkgnY0gmlwhMsAcQGJc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOA=="
+JTNOVTCP6XZUMXDRANXA6SWXTM    86900   IN    TXT   "enr=-H24QDquAsLj8mCMzJh8ka2BhVFg3n4V9efBJBiaXHcoL31vRJJef-lAseMhuQBEVpM_8Zrin0ReuUXJE7Fs8jy9FtwBgmlkgnY0gmlwhMYzZGOJc2VjcDI1NmsxoQLtfC0F55K2s1egRhrc6wWX5dOYjqla-OuKCELP92O3kA=="
+JGUFMSAGI7KZYB3P7IZW4S5Y3A    86900   IN    TXT   "enrtree-link=AM5FCQLWIZX2QFPNJAP7VUERCCRNGRHWZG3YYHIUV7BVDQ5FDPRT2@morenodes.example.org"
+```
+
+### Referencing Trees by URL
+
+When referencing a record tree, e.g. in source code, the preferred form is a
+URL. URLs should use the scheme `enrtree://` and encode the DNS domain of the
+tree in the hostname. The expected public key that signs the tree should be
+encoded in 33-byte compressed form as a base32 string in the username portion of
+the URL.
+
+Example:
+
+```text
+enrtree://AP62DT7WOTEQZGQZOU474PP3KMEGVTTE7A7NPRXKX3DUD57TQHGIA@nodes.example.org
 ```
 
 ### Client Protocol
@@ -81,17 +95,17 @@ d8555522d5d0bf89  86400  IN    TXT   "enr=_<guQjUTCP{RqHWjGNW?LRl*ySR#tAhp%LQL3m
 To find nodes at a given DNS name, say "mynodes.org":
 
 1. Resolve the TXT record of the name and check whether it contains a valid
-   "enr-tree-root=v1" entry. Let's say the root hash contained in the entry is
-   "78019b5998661b1f".
+   "enrtree-root=v1" entry. Let's say the root hash contained in the entry is
+   "CFZUWDU7JNQR4VTCZVOJZ5ROV4".
 2. Optionally verify the signature on the root against a known public key and
    check whether the sequence number is larger than or equal to any previous
    number seen for that name.
-3. Resolve the TXT record of the hash subdomain, e.g. "78019b5998661b1f.mynodes.org"
+3. Resolve the TXT record of the hash subdomain, e.g. "CFZUWDU7JNQR4VTCZVOJZ5ROV4.mynodes.org"
    and verify whether the content matches the hash.
 4. The next step depends on the entry type found:
-   - for `enr-tree`: parse the list of hashes and continue resolving those (step 3).
+   - for `enrtree`: parse the list of hashes and continue resolving those (step 3).
+   - for `enrtree-link`: continue traversal on the linked domain (step 1).
    - for `enr`: decode, verify the node record and import it to local node storage.
-   - for `enr-tree-link`: continue traversal on the linked domain (step 1).
 
 During traversal, the client should track hashes and domains which are already
 resolved to avoid going into an infinite loop.
@@ -128,6 +142,11 @@ Links between lists enable federation and web-of-trust functionality. The
 operator of a large list can delegate maintenance to other list providers. If
 two node lists link to each other, users can use either list and get nodes from
 both.
+
+# References
+
+1. The base64 and base32 encodings used to represent binary data are defined in
+   RFC 4648 (https://tools.ietf.org/html/rfc4648). No padding is used for base32.
 
 # Copyright
 
