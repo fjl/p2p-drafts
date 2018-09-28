@@ -54,8 +54,8 @@ hash of its text content.
 - `enrtree=<h₁>,<h₂>,...,<hₙ>` is an intermediate tree containing further hash
   subdomains.
 - `enrtree-link=<key>@<fqdn>` is a leaf pointing to a different list located at
-  another fully qualified domain name. The `key`, a base32 encoded secp256k1
-  public key, is the expected signer of the list.
+  another fully qualified domain name. The key is the expected signer of the
+  remote list, a base32 encoded secp256k1 public key,
 - `enr=<node-record>` is a leaf containing a node record [as defined in EIP-778][eip-778].
   The node record is encoded as a URL-safe base64 string.
 
