@@ -1,5 +1,5 @@
 ---
-eip: XXX
+eip: 1459
 title: Node Discovery via DNS
 author: Felix Lange <fjl@ethereum.org>, Péter Szilágyi <peter@ethereum.org>
 type: Standards Track
@@ -7,6 +7,7 @@ category: Networking
 status: Draft
 created: 2018-09-26
 requires: 778
+discussions-to: https://github.com/ethereum/devp2p/issues/50
 ---
 
 # Abstract
