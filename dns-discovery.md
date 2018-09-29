@@ -11,8 +11,8 @@ requires: 778
 
 # Abstract
 
-This document describes a scheme for permissioned, authenticated, updateable
-Ethereum node lists retrievable via DNS.
+This document describes a scheme for authenticated, updateable Ethereum node lists
+retrievable via DNS.
 
 # Motivation
 
@@ -23,15 +23,10 @@ maintain larger node lists containing hundreds of nodes, and update them
 regularly.
 
 The scheme described here is a replacement for client bootstrap node lists with
-equivalent security and many additional benefits. The permissioned nature of the
-scheme is comparable to current practice because client developers are in full
-control of current bootstrap node lists and any further nodes reachable through
-them.
-
-DNS node lists may also be useful to Ethereum peering providers because their
-customers can configure the client to use the provider's list. Finally, the
-scheme serves as a fallback option for nodes which can't join the node discovery
-DHT.
+equivalent security and many additional benefits. DNS node lists may also be
+useful to Ethereum peering providers because their customers can configure the
+client to use the provider's list. Finally, the scheme serves as a fallback
+option for nodes which can't join the node discovery DHT.
 
 # Specification
 
@@ -79,10 +74,9 @@ JGUFMSAGI7KZYB3P7IZW4S5Y3A    86900   IN    TXT   "enrtree-link=AM5FCQLWIZX2QFPN
 ### Referencing Trees by URL
 
 When referencing a record tree, e.g. in source code, the preferred form is a
-URL. URLs should use the scheme `enrtree://` and encode the DNS domain of the
-tree in the hostname. The expected public key that signs the tree should be
-encoded in 33-byte compressed form as a base32 string in the username portion of
-the URL.
+URL. References should use the scheme `enrtree://` and encode the DNS domain in
+the hostname. The expected public key that signs the tree should be encoded in
+33-byte compressed form as a base32 string in the username portion of the URL.
 
 Example:
 
