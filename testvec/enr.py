@@ -14,6 +14,10 @@ KV_CODECS = {
         'encode': socket.inet_aton,
         'decode': socket.inet_ntoa,
     },
+    'ip6': {
+        'encode': socket.inet_aton,
+        'decode': socket.inet_ntoa,
+    },
     'udp': {
         'encode': eth_utils.int_to_big_endian,
         'decode': eth_utils.big_endian_to_int,
@@ -96,6 +100,15 @@ class ENR:
         e._kv = cls._decode_kv(elems[2:])
         e._check_signature(elems[1:])
         return e
+
+     def text(self):
+        return "enr:" + base64.b64encode(self.encode()).decode()
+
+    @classmethod
+    def from_text(cls, text):
+        if text.startswith("enr:"):
+            text = text[4:]
+        return cls.from_rlp(base64.b64decode(text))
 
     @classmethod
     def _decode_kv(cls, list):

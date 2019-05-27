@@ -16,7 +16,12 @@ def test_encode_decode():
     print('Node address:\n  ', e.node_addr().hex())
 
     e2 = ENR.from_rlp(enc)
-    print("Decoded Record:\n  ", e2)
+    print("Decoded Record:\n  ", e2.text())
+
+def test_text():
+    e = ENR.from_text("enr:+IS4QHCYrYZbAKWCBRlAy5zzaDZXJBGkcnh4MHcBFZntXNFrdvJjX04jRzjzCBOonrkTfj499SZuOh8R33Ls8RRcy5wBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2/oxVtw0RW/QAdpzBQA8yWM0xOIN1ZHCCdl8=")
+    print("Decoded Record:\n  ", e)
+    print("Recoded Record:\n  ", e.text())
 
 # def test_go_interop():
 #     enc = bytes.fromhex('f896b84062f4b42c32b8fad8fe40e4f2f2e0b6964e68e577905828998fd6a0279fa6c55e20a9b19ae709017eef4448d6dd9afd578fb64d5bbd2c80fbe723eb4bd4c9ffbb058664697363763582766082696490736563703235366b312d6b656363616b83697034847f00000389736563703235366b31a103ca634cae0d49acb401d8a4c6b6fe8c55b70d115bf400769cc1400f3258cd3138')
