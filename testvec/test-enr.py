@@ -19,7 +19,7 @@ def test_encode_decode():
     print("Decoded Record:\n  ", e2.text())
 
 def test_text():
-    e = ENR.from_text("enr:+IS4QHCYrYZbAKWCBRlAy5zzaDZXJBGkcnh4MHcBFZntXNFrdvJjX04jRzjzCBOonrkTfj499SZuOh8R33Ls8RRcy5wBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2/oxVtw0RW/QAdpzBQA8yWM0xOIN1ZHCCdl8=")
+    e = ENR.from_text("enr:-IS4QHCYrYZbAKWCBRlAy5zzaDZXJBGkcnh4MHcBFZntXNFrdvJjX04jRzjzCBOonrkTfj499SZuOh8R33Ls8RRcy5wBgmlkgnY0gmlwhH8AAAGJc2VjcDI1NmsxoQPKY0yuDUmstAHYpMa2_oxVtw0RW_QAdpzBQA8yWM0xOIN1ZHCCdl8")
     print("Decoded Record:\n  ", e)
     print("Recoded Record:\n  ", e.text())
 

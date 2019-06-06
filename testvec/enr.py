@@ -26,6 +26,15 @@ KV_CODECS = {
         'encode': eth_utils.int_to_big_endian,
         'decode': eth_utils.big_endian_to_int,
     },
+    'udp6': {
+        'encode': eth_utils.int_to_big_endian,
+        'decode': eth_utils.big_endian_to_int,
+    },
+    'tcp6': {
+        'encode': eth_utils.int_to_big_endian,
+        'decode': eth_utils.big_endian_to_int,
+    },
+
 }
 
 MAXSIZE = 300
@@ -101,14 +110,14 @@ class ENR:
         e._check_signature(elems[1:])
         return e
 
-     def text(self):
-        return "enr:" + base64.b64encode(self.encode()).decode()
+    def text(self):
+        return "enr:" + urlsafe_b64encode(self.encode()).decode()
 
     @classmethod
     def from_text(cls, text):
         if text.startswith("enr:"):
             text = text[4:]
-        return cls.from_rlp(base64.b64decode(text))
+        return cls.from_rlp(urlsafe_b64decode(text))
 
     @classmethod
     def _decode_kv(cls, list):
@@ -143,3 +152,11 @@ class ENR:
 def _signature_to_der(sig):
     csig = coincurve.ecdsa.deserialize_compact(sig)
     return coincurve.ecdsa.cdata_to_der(csig)
+
+def urlsafe_b64encode(data):
+    return base64.urlsafe_b64encode(data).rstrip(b'=')
+
+def urlsafe_b64decode(data):
+    pad = '=' * (4 - (len(data) & 3))
+    return base64.urlsafe_b64decode(data + pad)
+
