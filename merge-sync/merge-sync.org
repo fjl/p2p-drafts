@@ -13,12 +13,29 @@ The interface that eth2 and eth1 use to communicate is uni-directional: all cros
 communication is initiated by eth2, and happens in the form of requests. Eth1 simply
 responds to each request, but cannot request any information from eth2.
 
-Definitions: In the text below, we refer to beacon chain blocks as b_x. We also assume
-that the beacon chain begins at block b_W, a recent checkpoint, which must be a block
-after the merge event. There is a direct correspondence between beacon chain blocks and
-block data of the execution layer: for every beacon block b_x (for x >= w), a
-corresponding execution-layer block B_x also exists. Additionally, every execution-layer
-block B_x contains its block header H_x.
+* Definitions
+
+In the text below, we refer to beacon chain blocks as b_x. We also assume that the beacon
+chain begins at block b_W, a recent checkpoint, which must be a block after the merge
+event. There is a direct correspondence between beacon chain blocks and block data of the
+execution layer: for every beacon block b_x (for x >= w), a corresponding execution-layer
+block B_x also exists. Additionally, every execution-layer block B_x contains its block
+header H_x.
+
+Please note that this document is an abstract description of the sync algorithm and isn't
+concerned with the real APIs that eth1 and eth2 nodes will use to communicate. We assume
+that eth2 can invoke the following operations in the eth1 client:
+
+- checkpoint(H_w) :: notifies the eth1 client about a checkpoint block. This has no useful
+  response.
+
+- final(B) :: marks block B_x finalized. The eth1 client can answer 'ok', 'syncing' or
+  'synced(B)'.
+
+- proc(B) :: submits a non-finalized block for processing. The eth1 client can respond
+  with 'valid' or 'invalid'. Note: responses are not shown in diagrams.
+
+In diagrams, responses to eth2 requests are not shown unless they meaningfully impact sync.
 
 * Sync
 
@@ -101,7 +118,8 @@ two ways to do this:
 After reporting sync completion of B_{F+t} to the eth2 client (4), the execution layer is
 done and switches to its ordinary mode of operation: individual blocks are received from
 the eth2 client, the blocks are processed, and their validity reported back to the eth2
-client.
+client. Reorgs of non-finalized blocks may also be triggered after sync has completed.
+Reorg handling is discussed later in this document.
 
 ** Handling restarts and errors
 

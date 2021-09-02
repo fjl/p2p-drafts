@@ -4,7 +4,20 @@ After the merge event, eth1 and eth2 clients run in tandem. The eth2 client main
 
 The interface that eth2 and eth1 use to communicate is uni-directional: all cross-client communication is initiated by eth2, and happens in the form of requests. Eth1 simply responds to each request, but cannot request any information from eth2.
 
-Definitions: In the text below, we refer to beacon chain blocks as b<sub>x</sub>. We also assume that the beacon chain begins at block b<sub>W</sub>, a recent checkpoint, which must be a block after the merge event. There is a direct correspondence between beacon chain blocks and block data of the execution layer: for every beacon block b<sub>x</sub> (for x >= w), a corresponding execution-layer block B<sub>x</sub> also exists. Additionally, every execution-layer block B<sub>x</sub> contains its block header H<sub>x</sub>.
+
+# Definitions
+
+In the text below, we refer to beacon chain blocks as b<sub>x</sub>. We also assume that the beacon chain begins at block b<sub>W</sub>, a recent checkpoint, which must be a block after the merge event. There is a direct correspondence between beacon chain blocks and block data of the execution layer: for every beacon block b<sub>x</sub> (for x >= w), a corresponding execution-layer block B<sub>x</sub> also exists. Additionally, every execution-layer block B<sub>x</sub> contains its block header H<sub>x</sub>.
+
+Please note that this document is an abstract description of the sync algorithm and isn't concerned with the real APIs that eth1 and eth2 nodes will use to communicate. We assume that eth2 can invoke the following operations in the eth1 client:
+
+-   **checkpoint(H<sub>w</sub>):** notifies the eth1 client about a checkpoint block. This has no useful response.
+
+-   **final(B):** marks block B<sub>x</sub> finalized. The eth1 client can answer 'ok', 'syncing' or 'synced(B)'.
+
+-   **proc(B):** submits a non-finalized block for processing. The eth1 client can respond with 'valid' or 'invalid'. Note: responses are not shown in diagrams.
+
+In diagrams, responses to eth2 requests are not shown unless they meaningfully impact sync.
 
 
 # Sync
@@ -49,7 +62,7 @@ When the genesis header H<sub>G</sub> is reached, block body data can be downloa
     
     The peer-to-peer network can only provide the state of very recent blocks. Since it is expected that the state of B<sub>F</sub> will gradually become unavailable as the chain advances, the client must occasionally re-target its state sync to a more recent 'pivot block'. Conveniently, the newly-finalized blocks B<sub>F+1</sub>&#x2026;B<sub>F+t</sub> received from eth2 can be used for this purpose. You can read more about the pivot block in the [snap sync protocol specification](https://github.com/ethereum/devp2p/blob/master/caps/snap.md#synchronization-algorithm).
 
-After reporting sync completion of B<sub>F+t</sub> to the eth2 client (4), the execution layer is done and switches to its ordinary mode of operation: individual blocks are received from the eth2 client, the blocks are processed, and their validity reported back to the eth2 client.
+After reporting sync completion of B<sub>F+t</sub> to the eth2 client (4), the execution layer is done and switches to its ordinary mode of operation: individual blocks are received from the eth2 client, the blocks are processed, and their validity reported back to the eth2 client. Reorgs of non-finalized blocks may also be triggered after sync has completed. Reorg handling is discussed later in this document.
 
 
 ## Handling restarts and errors
