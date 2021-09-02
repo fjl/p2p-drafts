@@ -46,7 +46,7 @@ The eth2 client should now submit the execution-layer block data of all non-fina
 
 Upon startup, the eth1 client first waits for a checkpoint header H<sub>W</sub> from the eth2 client. H<sub>W</sub> must be a descendant of the genesis block B<sub>G</sub>.
 
-Sync begins when the finalized block B<sub>F</sub> is received (1). This block is assumed to be valid. Furthermore, it is assumed that B<sub>F</sub> is a descendant of B<sub>W</sub>.
+Sync begins when the finalized block B<sub>F</sub> is received. This block is assumed to be valid. Furthermore, it is assumed that B<sub>F</sub> is a descendant of B<sub>W</sub>.
 
 While the chain is downloading/processing, the eth1 client receives further notifications about newly-finalized blocks in range B<sub>F+1</sub>&#x2026;B<sub>F+t</sub>. During sync, at latest finalized block B<sub>f</sub>, clients must handle final(B<sub>x</sub>) as follows:
 
@@ -56,9 +56,9 @@ While the chain is downloading/processing, the eth1 client receives further noti
 
 When proc() is received during sync, the response is 'syncing'.
 
-After starting sync on B<sub>F</sub>, the eth1 client first downloads the chain of block headers down from H<sub>F</sub>, following parent hashes (2). Headers are written to the database. The header chain must contain the checkpoint header H<sub>W</sub>, and sync aborts if a different header is encountered at the same block number. This sanity check exists to ensure that the chain is valid without having to sync all the way back to the genesis block.
-
 ![img](./img/eth1-1.svg "Downloading the finalized eth1 chain")
+
+After starting sync on B<sub>F</sub> (1), the eth1 client first downloads the chain of block headers down from H<sub>F</sub>, following parent hashes (2). Headers are written to the database. The header chain must contain the checkpoint header H<sub>W</sub>, and sync aborts if a different header is encountered at the same block number. This sanity check exists to ensure that the chain is valid without having to sync all the way back to the genesis block.
 
 When the genesis header H<sub>G</sub> is reached, block body data can be downloaded (3). There are two ways to do this:
 
