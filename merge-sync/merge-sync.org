@@ -109,8 +109,8 @@ The above description of sync focuses on a single sync cycle. In order to be rob
 against failures, and to handle client restarts, clients must be able to perform multiple
 sync cycles with an initialized database. The interface between eth2 and eth1 is designed
 to make this possible because it is uni-directional: When eth2 restarts, it can simply
-perform the usual notification sequence and expect that the eth1 client will reset itself
-to the correct state.
+perform the usual request sequence and expect that the eth1 client will reset itself to
+the correct state.
 
 When eth1 receives note of a finalized block B_F, there are two possibilities: if the
 block already exists in the local chain, and its application state is also available, sync
@@ -149,17 +149,17 @@ It is common knowledge that the application state of eth1 can become quite large
 eth1 clients usually only store exactly one full copy of this state.
 
 In order to make state synchronization work, the application state of the latest finalized
-block B_F must be available for download. We therefore recommend that clients which
-maintain exactly one full copy of the state should store the state of B_F.
+block B_F must be available for download. We therefore recommend that clients which store
+exactly one full copy of the state should store the state of B_F.
 
-For the tree of non-finalized blocks beyond B_F, the state diffs of each block can be
-stored in main memory. As new blocks are finalized, the client applies diffs to its
-database, moving the persistent state forward. Storing diffs in memory allows for
-efficient reorg processing: when the eth2 client detects a reorg from block b_x to block
-b_y, it first determines the common ancestor b_a. It can then submit all blocks
-B_{a+1}...B_y for processing. When the eth1 client detects that a block has already been
-processed because its state is available as a diff in memory, it can skip EVM processing
-of the block and simply move its head state reference to the new block.
+For the tree of non-finalized blocks beyond B_F, the state diffs of each block can be held
+in main memory. As new blocks are finalized, the client applies diffs to its database,
+moving the persistent state forward. Storing diffs in memory allows for efficient reorg
+processing: when the eth2 client detects a reorg from block b_x to block b_y, it first
+determines the common ancestor b_a. It can then submit all blocks B_{a+1}...B_y for
+processing. When the eth1 client detects that a block has already been processed because
+its state is available as a diff in memory, it can skip EVM processing of the block and
+simply move its head state reference to the new block.
 
 While reorgs below B_F cannot happen during normal operation of the beacon chain, it may
 still be necessary to roll back to an earlier state when EVM processing of a block causes
