@@ -60,11 +60,9 @@ When eth1 receives note of a finalized block B<sub>F</sub>, there are two possib
 
 For eth1 sync restarts, block data persisted to the database by previous sync cycles can be reused. Whenever a finalized header H<sub>x</sub> is to be fetched from the network, the client should check if the database already contains block data at the same block height x. If the local database contains a finalized header at height x, but its hash does not match H<sub>x</sub>, the client should delete the header and all block data associated with it. If the hash of the previously-stored header does match H<sub>x</sub>, sync can skip over the chain of locally available headers and resume sync at the height of the next unavailable header.
 
-To make this skipping operation work efficiently, we recommend that clients store and maintain 'marker' records containing information about previously-stored contiguous chain segments.
+To make this skipping operation work efficiently, we recommend that clients store and maintain 'marker' records containing information about previously-stored contiguous chain segments. When sync starts at H<sub>F</sub>, the client stores marker M<sub>F</sub> = F. As subsequent headers H<sub>x</sub> are downloaded, the marker is updated to M<sub>F</sub> = x. Similarly, as the chain is extended forward by concurrent calls to final(B<sub>F+n</sub>), the marker also moves forward, i.e. M<sub>F+n</sub> = M<sub>F</sub> and M<sub>F</sub> is deleted.
 
-When sync starts at H<sub>F</sub>, the client stores marker M<sub>F</sub> = F. As subsequent headers H<sub>x</sub> are downloaded, the marker is updated to M<sub>F</sub> = x. Similarly, as the chain is extended forward by concurrent calls to final(B<sub>F+n</sub>), the marker also moves forward, i.e. M<sub>F+n</sub> = M<sub>F</sub> and M<sub>F</sub> is deleted.
-
-The sync cycle terminates unexpectedly at block height s. When the next sync cycle starts, it first loads marker records of previous sync cycles. As the new cycle progresses downloading parents, it will eventually cross the previous height F. If the header hash matches the previously-stored header H<sub>F</sub>, the marker can be used to resume sync at height s where the first cycle left off.
+Now assume that the sync cycle terminates unexpectedly at block height s. When the next cycle starts, it first loads marker records of previous sync cycles. As the new cycle progresses downloading parents, it will eventually cross the previous height F. If the header hash matches the previously-stored header H<sub>F</sub>, the marker can be used to resume sync at height s where the first cycle left off.
 
 
 # Reorg processing and state availability

@@ -130,18 +130,16 @@ locally available headers and resume sync at the height of the next unavailable 
 
 To make this skipping operation work efficiently, we recommend that clients store and
 maintain 'marker' records containing information about previously-stored contiguous chain
-segments.
+segments. When sync starts at H_F, the client stores marker M_F = F. As subsequent headers
+H_x are downloaded, the marker is updated to M_F = x. Similarly, as the chain is extended
+forward by concurrent calls to final(B_{F+n}), the marker also moves forward, i.e. M_{F+n}
+= M_F and M_F is deleted.
 
-When sync starts at H_F, the client stores marker M_F = F. As subsequent headers H_x are
-downloaded, the marker is updated to M_F = x. Similarly, as the chain is extended forward
-by concurrent calls to final(B_{F+n}), the marker also moves forward, i.e. M_{F+n} = M_F
-and M_F is deleted.
-
-The sync cycle terminates unexpectedly at block height s. When the next sync cycle starts,
-it first loads marker records of previous sync cycles. As the new cycle progresses
-downloading parents, it will eventually cross the previous height F. If the header hash
-matches the previously-stored header H_F, the marker can be used to resume sync at height
-s where the first cycle left off.
+Now assume that the sync cycle terminates unexpectedly at block height s. When the next
+cycle starts, it first loads marker records of previous sync cycles. As the new cycle
+progresses downloading parents, it will eventually cross the previous height F. If the
+header hash matches the previously-stored header H_F, the marker can be used to resume
+sync at height s where the first cycle left off.
 
 * Reorg processing and state availability
 
