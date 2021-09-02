@@ -28,7 +28,7 @@ that eth2 can invoke the following operations in the eth1 client:
 
 - checkpoint(H) :: notifies the eth1 client about a checkpoint header. This has no useful
   response.
-- final(B) :: marks block B_x finalized. The eth1 client can answer 'ok', 'syncing' or
+- final(B) :: marks block B_x finalized. The eth1 client can answer 'ok', 'syncing', or
   synced(B). Note that we assume this will be called for all finalized blocks, even though
   eth2 only finalizes on certain 'epoch boundary' blocks.
 - proc(B) :: submits a non-finalized block for processing. The eth1 client can respond
@@ -76,20 +76,24 @@ current head block b_H is reached.
 
 ** eth1 perspective
 
-Upon startup, the eth1 client first waits for a checkpoint header H_W from the eth2 client.
+Upon startup, the eth1 client first waits for a checkpoint header H_W from the eth2
+client. H_W must be a descendant of the genesis block B_G.
 
 Sync begins when the finalized block B_F is received (1). This block is assumed to be
-valid. Furthermore, it is assumed that B_F is a descendant of the genesis block B_G.
+valid. Furthermore, it is assumed that B_F is a descendant of B_W.
 
-The eth1 client first downloads the chain of block headers down from H_F, following parent
-hashes (2). Headers are written to the database. The header chain must contain the
-checkpoint header H_W, and sync aborts if a different header is encountered at the same
-block number. This sanity check exists to ensure that the chain is valid without having to
-sync all the way back to the genesis block.
+While the chain is downloading/processing, the eth1 client receives further notifications
+about newly-finalized blocks in range B_{F+1}...B_{F+t}. The client must handle these as
+follows: At latest finalized block B_f, marking a marking a previously seen block final (x
+<= f) yields the 'ok' response. For x == f+1, the block is simply appended to the
+database. Attempting to mark an unknown future block final (x > f+1) restarts sync on
+B_{f+1}.
 
-While the chain is downloading/processing, the eth1 client also receives notifications
-about newly-finalized blocks in range B_{F+1}...B_{F+t}. These blocks must be appended to
-the database as they are received.
+After starting sync on B_F, the eth1 client first downloads the chain of block headers
+down from H_F, following parent hashes (2). Headers are written to the database. The
+header chain must contain the checkpoint header H_W, and sync aborts if a different header
+is encountered at the same block number. This sanity check exists to ensure that the chain
+is valid without having to sync all the way back to the genesis block.
 
 #+CAPTION: Downloading the finalized eth1 chain
 #+ATTR_HTML: :width 730 :height 173

@@ -12,7 +12,7 @@ In the text below, we refer to beacon chain blocks as b<sub>x</sub>. We also ass
 Please note that this document is an abstract description of the sync algorithm and isn't concerned with the real APIs that eth1 and eth2 nodes will use to communicate. We assume that eth2 can invoke the following operations in the eth1 client:
 
 -   **checkpoint(H):** notifies the eth1 client about a checkpoint header. This has no useful response.
--   **final(B):** marks block B<sub>x</sub> finalized. The eth1 client can answer 'ok', 'syncing' or synced(B). Note that we assume this will be called for all finalized blocks, even though eth2 only finalizes on certain 'epoch boundary' blocks.
+-   **final(B):** marks block B<sub>x</sub> finalized. The eth1 client can answer 'ok', 'syncing', or synced(B). Note that we assume this will be called for all finalized blocks, even though eth2 only finalizes on certain 'epoch boundary' blocks.
 -   **proc(B):** submits a non-finalized block for processing. The eth1 client can respond with 'valid' or 'invalid'.
 
 In diagrams, responses to eth2 requests are not shown unless they meaningfully impact sync.
@@ -42,13 +42,13 @@ The eth2 client should now submit the execution-layer block data of all non-fina
 
 ## eth1 perspective
 
-Upon startup, the eth1 client first waits for a checkpoint header H<sub>W</sub> from the eth2 client.
+Upon startup, the eth1 client first waits for a checkpoint header H<sub>W</sub> from the eth2 client. H<sub>W</sub> must be a descendant of the genesis block B<sub>G</sub>.
 
-Sync begins when the finalized block B<sub>F</sub> is received (1). This block is assumed to be valid. Furthermore, it is assumed that B<sub>F</sub> is a descendant of the genesis block B<sub>G</sub>.
+Sync begins when the finalized block B<sub>F</sub> is received (1). This block is assumed to be valid. Furthermore, it is assumed that B<sub>F</sub> is a descendant of B<sub>W</sub>.
 
-The eth1 client first downloads the chain of block headers down from H<sub>F</sub>, following parent hashes (2). Headers are written to the database. The header chain must contain the checkpoint header H<sub>W</sub>, and sync aborts if a different header is encountered at the same block number. This sanity check exists to ensure that the chain is valid without having to sync all the way back to the genesis block.
+While the chain is downloading/processing, the eth1 client receives further notifications about newly-finalized blocks in range B<sub>F+1</sub>&#x2026;B<sub>F+t</sub>. The client must handle these as follows: At latest finalized block B<sub>f</sub>, marking a marking a previously seen block final (x <= f) yields the 'ok' response. For x == f+1, the block is simply appended to the database. Attempting to mark an unknown future block final (x > f+1) restarts sync on B<sub>f+1</sub>.
 
-While the chain is downloading/processing, the eth1 client also receives notifications about newly-finalized blocks in range B<sub>F+1</sub>&#x2026;B<sub>F+t</sub>. These blocks must be appended to the database as they are received.
+After starting sync on B<sub>F</sub>, the eth1 client first downloads the chain of block headers down from H<sub>F</sub>, following parent hashes (2). Headers are written to the database. The header chain must contain the checkpoint header H<sub>W</sub>, and sync aborts if a different header is encountered at the same block number. This sanity check exists to ensure that the chain is valid without having to sync all the way back to the genesis block.
 
 ![img](./img/eth1-1.svg "Downloading the finalized eth1 chain")
 
