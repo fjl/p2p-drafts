@@ -41,7 +41,7 @@ While the chain is downloading/processing, the eth1 client also receives notific
 
 ![img](./img/eth1-1.svg "Downloading the finalized eth1 chain")
 
-When the genesis header H<sub>F</sub> is reached, block body data can be downloaded (3). There are two ways to do this:
+When the genesis header H<sub>G</sub> is reached, block body data can be downloaded (3). There are two ways to do this:
 
 -   The client can perform 'full sync', downloading blocks and executing their state transitions. This recreates the application state incrementally up to the latest block. Sync is complete when the latest finalized block B<sub>F+t</sub> has been processed.
 

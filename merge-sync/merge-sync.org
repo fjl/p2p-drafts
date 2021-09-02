@@ -79,7 +79,7 @@ the database as they are received.
 #+ATTR_HTML: :width 730 :height 173
 [[./img/eth1-1.svg]]
 
-When the genesis header H_F is reached, block body data can be downloaded (3). There are
+When the genesis header H_G is reached, block body data can be downloaded (3). There are
 two ways to do this:
 
 - The client can perform 'full sync', downloading blocks and executing their state
