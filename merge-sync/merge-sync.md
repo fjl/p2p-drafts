@@ -11,7 +11,7 @@ In the text below, we refer to beacon chain blocks as b<sub>x</sub>. We also ass
 
 Please note that this document is an abstract description of the sync algorithm and isn't concerned with the real APIs that eth1 and eth2 nodes will use to communicate. We assume that eth2 can invoke the following operations in the eth1 client:
 
--   **checkpoint(H<sub>w</sub>):** notifies the eth1 client about a checkpoint block. This has no useful response.
+-   **checkpoint(H):** notifies the eth1 client about a checkpoint header. This has no useful response.
 
 -   **final(B):** marks block B<sub>x</sub> finalized. The eth1 client can answer 'ok', 'syncing' or synced(B).
 

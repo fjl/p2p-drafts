@@ -26,7 +26,7 @@ Please note that this document is an abstract description of the sync algorithm 
 concerned with the real APIs that eth1 and eth2 nodes will use to communicate. We assume
 that eth2 can invoke the following operations in the eth1 client:
 
-- checkpoint(H_w) :: notifies the eth1 client about a checkpoint block. This has no useful
+- checkpoint(H) :: notifies the eth1 client about a checkpoint header. This has no useful
   response.
 
 - final(B) :: marks block B_x finalized. The eth1 client can answer 'ok', 'syncing' or
