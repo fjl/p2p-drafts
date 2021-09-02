@@ -150,14 +150,14 @@ In order to make state synchronization work, the application state of the latest
 block B_F must be available for download. We therefore recommend that clients which store
 exactly one full copy of the state should store the state of B_F.
 
-For the tree of non-finalized blocks beyond B_F, the state diffs of each block can be held
-in main memory. As new blocks are finalized, the client applies diffs to its database,
-moving the persistent state forward. Storing diffs in memory allows for efficient reorg
-processing: when the eth2 client detects a reorg from block b_x to block b_y, it first
-determines the common ancestor b_a. It can then submit all blocks B_{a+1}...B_y for
-processing. When the eth1 client detects that a block has already been processed because
-its state is available as a diff in memory, it can skip EVM processing of the block and
-simply move its head state reference to the new block.
+For the tree of non-finalized blocks beyond B_F, the state diff of each block can be held
+in main memory. As new blocks are finalized, the client applies their diffs to the
+database, moving the persistent state forward. Storing diffs in memory allows for
+efficient reorg processing: when the eth2 client detects a reorg from block b_x to block
+b_y, it first determines the common ancestor b_a. It can then submit all blocks
+B_{a+1}...B_y for processing. When the eth1 client detects that a block has already been
+processed because its state is available as a diff in memory, it can skip EVM processing
+of the block and simply move its head state reference to the new block.
 
 While reorgs below B_F cannot happen during normal operation of the beacon chain, it may
 still be necessary to roll back to an earlier state when EVM processing flaws cause the
