@@ -54,7 +54,7 @@ After reporting sync completion of B<sub>F+t</sub> to the eth2 client (4), the e
 
 ## Handling restarts and errors
 
-The above description of sync focuses on a single sync cycle. In order to be robust against failures, and to handle client restarts, clients must be able to perform multiple sync cycles with an initialized database. The interface between eth2 and eth1 is designed to make this possible because it is uni-directional: When eth2 restarts, it can simply perform the usual request sequence and expect that the eth1 client will reset itself to the correct state.
+The above description of sync focuses on a single sync cycle. In order to be robust against failures, and to handle client restarts, clients must be able to perform multiple sync cycles with an initialized database. The interface between eth2 and eth1 makes this easy for eth2 because it is uni-directional: When eth2 restarts, it can simply perform the usual request sequence and expect that the eth1 client will reset itself to the correct state.
 
 When eth1 receives note of a finalized block B<sub>F</sub>, there are two possibilities: if the block already exists in the local chain, and its application state is also available, sync isn't necessary. If the finalized block is unknown, the eth1 client should restart sync at step (1), downloading parent headers in reverse. If the block is known but its state is unavailable, the client should attempt to synchronize the state of B<sub>F</sub> or, when configured for full sync, attempt to process blocks forward up to B<sub>F</sub> from the most recent available state.
 
