@@ -206,9 +206,8 @@ applied to the state of B_F, resetting the client to an earlier state.
 In early review of this scheme, two issues were discovered. Both stem from our
 misunderstanding of eth2 finalization semantics.
 
-(1) Since eth2 finalizes blocks only on epoch boundaries, it will probably only call
-final(B) for epoch blocks. This could be handled a bit better by using proc(B) during
-sync.
+(1) Since eth2 finalizes blocks only on epoch boundaries, it only wants to call final(B)
+for epoch blocks. This could be handled a bit better by using proc(B) during sync.
 
 (2) While finalization will work within ~64 blocks in the happy case, it can take up to 2
 weeks to finalize in the event of a network partition. Since the maximum number of

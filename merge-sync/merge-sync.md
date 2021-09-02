@@ -14,7 +14,7 @@ In the text below, we refer to beacon chain blocks as b<sub>x</sub>. We also ass
 Please note that this document is an abstract description of the sync algorithm and isn't concerned with the real APIs that eth1 and eth2 nodes will use to communicate. We assume that eth2 can invoke the following operations in the eth1 client:
 
 -   **checkpoint(H):** notifies the eth1 client about a checkpoint header. This has no useful response.
--   **final(B):** marks block B<sub>x</sub> finalized. The eth1 client can answer 'old', 'syncing', invalid(B) or synced(B). Note that we assume this will be called for all finalized blocks, even though eth2 only finalizes on certain 'epoch boundary' blocks.
+-   **final(B):** marks block B<sub>x</sub> finalized. The eth1 client can answer 'old', 'syncing', invalid(B) or synced(B). Note that we assume this will be called for all finalized blocks, not just on eopch boundaries.
 -   **proc(B):** submits a non-finalized block for processing. The eth1 client can respond with 'valid', 'invalid' or 'syncing'.
 
 In diagrams, not all responses to eth2 requests are shown.
@@ -101,7 +101,7 @@ To make this 'manual intervention reorg' work, eth1 client can maintain backward
 
 In early review of this scheme, two issues were discovered. Both stem from our misunderstanding of eth2 finalization semantics.
 
-(1) Since eth2 finalizes blocks only on epoch boundaries, it will probably only call final(B) for epoch blocks. This could be handled a bit better by using proc(B) during sync.
+(1) Since eth2 finalizes blocks only on epoch boundaries, it only wants to call final(B) for epoch blocks. This could be handled a bit better by using proc(B) during sync.
 
 (2) While finalization will work within ~64 blocks in the happy case, it can take up to 2 weeks to finalize in the event of a network partition. Since the maximum number of non-finalized blocks is so much larger than we initially anticipated, it will not be possible to use B<sub>F</sub> as the persistent state block.
 
