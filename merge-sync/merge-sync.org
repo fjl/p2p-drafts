@@ -162,9 +162,9 @@ its state is available as a diff in memory, it can skip EVM processing of the bl
 simply move its head state reference to the new block.
 
 While reorgs below B_F cannot happen during normal operation of the beacon chain, it may
-still be necessary to roll back to an earlier state when EVM processing of a block causes
-the client to deviate from the canonical chain. As a safety net for this exceptional case,
-we recommend that eth1 clients to maintain a way to manually reorg up to 90,000 blocks
+still be necessary to roll back to an earlier state when EVM processing flaws cause the
+client to deviate from the canonical chain. As a safety net for this exceptional case, we
+recommend that eth1 clients to maintain a way to manually reorg up to 90,000 blocks
 (roughly 2 weeks), as this would provide sufficient time to fix issues.
 
 To make this 'manual intervention reorg' work, eth1 client can maintain backward diffs in
