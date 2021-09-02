@@ -1,5 +1,6 @@
-#+TITLE: Sync & The Merge
-#+OPTIONS: toc:nil
+#+OPTIONS: toc:nil num:nil
+
+* Sync & The Merge
 
 In this document, we present our ideas for implementing chain synchronization on the
 merged eth1 + eth2 chain.
@@ -13,7 +14,7 @@ The interface that eth2 and eth1 use to communicate is uni-directional: all cros
 communication is initiated by eth2, and happens in the form of requests. Eth1 simply
 responds to each request, but cannot request any information from eth2.
 
-* Definitions
+** Definitions
 
 In the text below, we refer to beacon chain blocks as b_x. We also assume that the beacon
 chain begins at block b_W, a recent checkpoint, which must be a block after the merge
@@ -36,9 +37,9 @@ that eth2 can invoke the following operations in the eth1 client:
 
 In diagrams, not all responses to eth2 requests are shown.
 
-* Sync
+** Sync
 
-** eth2 perspective
+*** eth2 perspective
 
 This section explains the sync procedure from the eth2 client point-of-view.
 
@@ -74,7 +75,7 @@ current head block b_H is reached.
 #+ATTR_HTML: :width 730 :height 173
 [[./img/beacon-2.svg]]
 
-** eth1 perspective
+*** eth1 perspective
 
 Upon startup, the eth1 client first waits for a checkpoint header H_W from the eth2
 client. H_W must be a descendant of the genesis block B_G.
@@ -131,7 +132,7 @@ the eth2 client, the blocks are processed, and their validity reported back to t
 client. Reorgs of non-finalized blocks may also be triggered after sync has completed.
 Reorg handling is discussed later in this document.
 
-** Handling restarts and errors
+*** Handling restarts and errors
 
 The above description of sync focuses on a single sync cycle. In order to be robust
 against failures, and to handle client restarts, clients must be able to perform multiple
@@ -169,7 +170,7 @@ progresses downloading parents, it will eventually cross the previous height F. 
 header hash matches the previously-stored header H_F, the marker can be used to resume
 sync at height s where the first cycle left off.
 
-* Reorg processing and state availability
+** Reorg processing and state availability
 
 It is common knowledge that the application state of eth1 can become quite large. As such,
 eth1 clients usually only store exactly one full copy of this state.

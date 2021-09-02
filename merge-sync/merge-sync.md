@@ -1,3 +1,5 @@
+# Sync & The Merge
+
 In this document, we present our ideas for implementing chain synchronization on the merged eth1 + eth2 chain.
 
 After the merge event, eth1 and eth2 clients run in tandem. The eth2 client maintains the connection to the beacon chain and performs fork choice. The eth1 client, a.k.a. the 'execution layer', receives block data from the eth2 client, executes/verifies it and maintains the application state.
@@ -5,7 +7,7 @@ After the merge event, eth1 and eth2 clients run in tandem. The eth2 client main
 The interface that eth2 and eth1 use to communicate is uni-directional: all cross-client communication is initiated by eth2, and happens in the form of requests. Eth1 simply responds to each request, but cannot request any information from eth2.
 
 
-# Definitions
+## Definitions
 
 In the text below, we refer to beacon chain blocks as b<sub>x</sub>. We also assume that the beacon chain begins at block b<sub>W</sub>, a recent checkpoint, which must be a block after the merge event. There is a direct correspondence between beacon chain blocks and block data of the execution layer: for every beacon block b<sub>x</sub> (for x >= w), a corresponding execution-layer block B<sub>x</sub> also exists. Additionally, every execution-layer block B<sub>x</sub> contains its block header H<sub>x</sub>.
 
@@ -18,10 +20,10 @@ Please note that this document is an abstract description of the sync algorithm 
 In diagrams, not all responses to eth2 requests are shown.
 
 
-# Sync
+## Sync
 
 
-## eth2 perspective
+### eth2 perspective
 
 This section explains the sync procedure from the eth2 client point-of-view.
 
@@ -40,7 +42,7 @@ The eth2 client should now submit the execution-layer block data of all non-fina
 ![img](./img/beacon-2.svg "Processing non-finalized blocks")
 
 
-## eth1 perspective
+### eth1 perspective
 
 Upon startup, the eth1 client first waits for a checkpoint header H<sub>W</sub> from the eth2 client. H<sub>W</sub> must be a descendant of the genesis block B<sub>G</sub>.
 
@@ -69,7 +71,7 @@ When the genesis header H<sub>G</sub> is reached, block body data can be downloa
 After reporting sync completion of B<sub>F+t</sub> to the eth2 client (4), the execution layer is done and switches to its ordinary mode of operation: individual blocks are received from the eth2 client, the blocks are processed, and their validity reported back to the eth2 client. Reorgs of non-finalized blocks may also be triggered after sync has completed. Reorg handling is discussed later in this document.
 
 
-## Handling restarts and errors
+### Handling restarts and errors
 
 The above description of sync focuses on a single sync cycle. In order to be robust against failures, and to handle client restarts, clients must be able to perform multiple sync cycles with an initialized database. The interface between eth2 and eth1 makes this easy for eth2 because it is uni-directional: When eth2 restarts, it can simply perform the usual request sequence and expect that the eth1 client will reset itself to the correct state.
 
@@ -82,7 +84,7 @@ To make this skipping operation work efficiently, we recommend that clients stor
 Now assume that the sync cycle terminates unexpectedly at block height s. When the next cycle starts, it first loads marker records of previous sync cycles. As the new cycle progresses downloading parents, it will eventually cross the previous height F. If the header hash matches the previously-stored header H<sub>F</sub>, the marker can be used to resume sync at height s where the first cycle left off.
 
 
-# Reorg processing and state availability
+## Reorg processing and state availability
 
 It is common knowledge that the application state of eth1 can become quite large. As such, eth1 clients usually only store exactly one full copy of this state.
 
