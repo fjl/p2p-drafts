@@ -34,7 +34,7 @@ that eth2 can invoke the following operations in the eth1 client:
   response.
 - final(B) :: marks block B_x finalized. The eth1 client can answer 'old', 'syncing',
   invalid(B) or synced(B). Note that we assume this will be called for all finalized
-  blocks, even though eth2 only finalizes on certain 'epoch boundary' blocks.
+  blocks, not just on eopch boundaries.
 - proc(B) :: submits a non-finalized block for processing. The eth1 client can respond
   with 'valid', 'invalid' or 'syncing'.
 
