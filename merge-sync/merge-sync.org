@@ -83,11 +83,11 @@ Sync begins when the finalized block B_F is received (1). This block is assumed 
 valid. Furthermore, it is assumed that B_F is a descendant of B_W.
 
 While the chain is downloading/processing, the eth1 client receives further notifications
-about newly-finalized blocks in range B_{F+1}...B_{F+t}. The client must handle these as
-follows: At latest finalized block B_f, marking a marking a previously seen block final (x
-<= f) yields the 'ok' response. For x == f+1, the block is simply appended to the
-database. Attempting to mark an unknown future block final (x > f+1) restarts sync on
-B_{f+1}.
+about newly-finalized blocks in range B_{F+1}...B_{F+t}. During sync, at latest finalized
+block B_f, clients must handle final(B_x) as follows: At , marking a marking a previously
+seen block final (x <= f) yields the 'ok' response. For x == f+1, the block is simply
+appended to the database and f = f+1. Attempting to mark an unknown future block final (x
+> f+1) restarts sync on B_x.
 
 After starting sync on B_F, the eth1 client first downloads the chain of block headers
 down from H_F, following parent hashes (2). Headers are written to the database. The
