@@ -106,7 +106,7 @@ When proc() is received during sync, the response is 'syncing'.
 
 After starting sync on B_F (1), the eth1 client first downloads the chain of block headers
 down from H_F, following parent hashes (2). Headers are written to the database. The
-header chain must contain the checkpoint header H_W, and sync aborts if a different header
+header chain must contain the checkpoint header H_W, and sync fails if a different header
 is encountered at the same block number. This sanity check exists to ensure that the chain
 is valid without having to sync all the way back to the genesis block.
 

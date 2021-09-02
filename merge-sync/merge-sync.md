@@ -58,7 +58,7 @@ When proc() is received during sync, the response is 'syncing'.
 
 ![img](./img/eth1-1.svg "Downloading the finalized eth1 chain")
 
-After starting sync on B<sub>F</sub> (1), the eth1 client first downloads the chain of block headers down from H<sub>F</sub>, following parent hashes (2). Headers are written to the database. The header chain must contain the checkpoint header H<sub>W</sub>, and sync aborts if a different header is encountered at the same block number. This sanity check exists to ensure that the chain is valid without having to sync all the way back to the genesis block.
+After starting sync on B<sub>F</sub> (1), the eth1 client first downloads the chain of block headers down from H<sub>F</sub>, following parent hashes (2). Headers are written to the database. The header chain must contain the checkpoint header H<sub>W</sub>, and sync fails if a different header is encountered at the same block number. This sanity check exists to ensure that the chain is valid without having to sync all the way back to the genesis block.
 
 When the genesis header H<sub>G</sub> is reached, block body data can be downloaded (3). There are two ways to do this:
 
