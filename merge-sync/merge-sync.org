@@ -132,7 +132,7 @@ To make this skipping operation work efficiently, we recommend that clients stor
 maintain 'marker' records containing information about previously-stored contiguous chain
 segments. When sync starts at H_F, the client stores marker M_F = F. As subsequent headers
 H_x are downloaded, the marker is updated to M_F = x. Similarly, as the chain is extended
-forward by concurrent calls to final(B_{F+n}), the marker also moves forward, i.e. M_{F+n}
+forward by concurrent calls to final(B_{F+1}), the marker also moves forward, i.e. M_{F+1}
 = M_F and M_F is deleted.
 
 Now assume that the sync cycle terminates unexpectedly at block height s. When the next
