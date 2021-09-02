@@ -13,9 +13,9 @@ Please note that this document is an abstract description of the sync algorithm 
 
 -   **checkpoint(H<sub>w</sub>):** notifies the eth1 client about a checkpoint block. This has no useful response.
 
--   **final(B):** marks block B<sub>x</sub> finalized. The eth1 client can answer 'ok', 'syncing' or 'synced(B)'.
+-   **final(B):** marks block B<sub>x</sub> finalized. The eth1 client can answer 'ok', 'syncing' or synced(B).
 
--   **proc(B):** submits a non-finalized block for processing. The eth1 client can respond with 'valid' or 'invalid'. Note: responses are not shown in diagrams.
+-   **proc(B):** submits a non-finalized block for processing. The eth1 client can respond with 'valid' or 'invalid'.
 
 In diagrams, responses to eth2 requests are not shown unless they meaningfully impact sync.
 

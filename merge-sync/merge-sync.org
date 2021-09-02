@@ -30,10 +30,10 @@ that eth2 can invoke the following operations in the eth1 client:
   response.
 
 - final(B) :: marks block B_x finalized. The eth1 client can answer 'ok', 'syncing' or
-  'synced(B)'.
+  synced(B).
 
 - proc(B) :: submits a non-finalized block for processing. The eth1 client can respond
-  with 'valid' or 'invalid'. Note: responses are not shown in diagrams.
+  with 'valid' or 'invalid'.
 
 In diagrams, responses to eth2 requests are not shown unless they meaningfully impact sync.
 
