@@ -230,5 +230,5 @@ Adding the calcified block also adds some tricky new corner cases and failure mo
 particular, if the eth1 client just performed snap sync, it will not be able to reorg
 below B_C, because reverse diffs down to B_F will not be available. We may solve this by
 recommending that nodes should attempt snap sync if reset(B) cannot be satisfied. For
-sure, some nodes will be synced enough to serve this state to others. In the absolute
+sure, some nodes will be synced enough to serve the target state. In the absolute
 worst case, we need to make reverse diffs available for download in snap sync.
