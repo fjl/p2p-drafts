@@ -4,7 +4,7 @@
 
 In this document, we (the geth team) present our ideas for implementing chain synchronization on the merged eth1 + eth2 chain. After the merge event, eth1 and eth2 clients run in tandem. The eth2 client maintains the connection to the beacon chain and performs fork choice. The eth1 client, a.k.a. the 'execution layer', receives block data from the eth2 client, executes/verifies it and maintains the application state.
 
-The interface that eth2 and eth1 use to communicate is uni-directional: all cross-client communication is initiated by eth2, and happens in the form of requests. Eth1 responds to to requests, but cannot request any information from eth2.
+The interface that eth2 and eth1 use to communicate is uni-directional: all cross-client communication is initiated by eth2, and happens in the form of requests. Eth1 responds to requests, but cannot request any information from eth2.
 
 
 ## Definitions

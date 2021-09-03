@@ -15,7 +15,7 @@ from the eth2 client, executes/verifies it and maintains the application state.
 
 The interface that eth2 and eth1 use to communicate is uni-directional: all cross-client
 communication is initiated by eth2, and happens in the form of requests. Eth1 responds to
-to requests, but cannot request any information from eth2.
+requests, but cannot request any information from eth2.
 
 ** Definitions
 
