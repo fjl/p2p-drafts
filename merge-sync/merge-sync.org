@@ -217,8 +217,8 @@ possible to use B_F as the persistent state block.
 
 We have decided to tackle this issue in the following way:
 
-- At head block H, define the 'calcified' block B_C with C = max(H-512, F). This puts an
-  upper bound of 512 blocks on the number of states kept in memory.
+- At head H, define the 'calcified' block B_C with C = max(H-512, F). This puts an upper
+  bound of 512 blocks on the number of states kept in memory.
 - Define that clients should keep the state of B_C in persistent storage.
 - Use B_C as the initial sync target. This has implications on the sync trigger because
   the eth1 client can no longer rely on final(B) to start sync (B_C may be non-final).
