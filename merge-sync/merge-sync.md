@@ -14,8 +14,8 @@ In the text below, we refer to beacon chain blocks as b<sub>x</sub>. We also ass
 Please note that this document is an abstract description of the sync algorithm and isn't concerned with the real APIs that eth1 and eth2 nodes will use to communicate. We assume that eth2 can invoke the following operations in the eth1 client:
 
 -   **checkpoint(H):** notifies the eth1 client about a checkpoint header. This has no useful response.
--   **final(B):** submits a finalized block B<sub>x</sub>. The eth1 client can answer 'old', 'syncing', invalid(B) or synced(B). Note that we assume this will be called for all finalized blocks, not just on epoch boundaries.
--   **proc(B):** submits a non-finalized block for processing. The eth1 client can respond with 'valid', 'invalid' or 'syncing'.
+-   **final(B):** submits a finalized block. The eth1 client can answer 'old', 'syncing', invalid(B) or synced(B). Note that we assume this will be called for all finalized blocks, not just on epoch boundaries.
+-   **proc(B):** submits a non-finalized block for EVM processing. The eth1 client can respond with 'valid', 'invalid' or 'syncing'.
 
 In diagrams, not all responses to eth2 requests are shown.
 
