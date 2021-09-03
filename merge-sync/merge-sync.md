@@ -33,11 +33,11 @@ To sync, the eth2 client must first process the beacon chain optimistically&#x20
 
 ![img](./img/beacon-1.svg "Syncing up to the latest finalized block")
 
-The eth2 client keeps following the beacon chain until the eth1 sync completes, and keeps submitting finalized blocks to the eth1 client. This means it should repeat step (3) for every new finalized block.
+The eth2 client keeps following the beacon chain until eth1 sync completes, and keeps submitting finalized blocks to the eth1 client. This means it should repeat step (3) for every new finalized block.
 
-The eth1 sync will usually take quite a bit of time to complete. While it is syncing, the the beacon chain advances by t blocks to the latest finalized block b<sub>F+t</sub>.
+Eth1 sync will usually take quite a bit of time to complete. While it is syncing, the beacon chain advances by t blocks to the latest finalized block b<sub>F+t</sub>.
 
-The eth1 client signals that it is done by responding with synced(B<sub>F+t</sub>), The application state of B<sub>F+t</sub> is now available and the eth2 client can perform additional cross-validation against this state. For example, it could read the deposit contract here.
+The eth1 client signals that it is done by responding with synced(B<sub>F+t</sub>) (4). The application state of B<sub>F+t</sub> is now available and the eth2 client can perform additional cross-validation against this state. For example, it could read the deposit contract here.
 
 The eth2 client should now submit the execution-layer block data of all non-finalized beacon blocks to the eth1 client for processing (5). The sync procedure completes when the current head block b<sub>H</sub> is reached.
 
