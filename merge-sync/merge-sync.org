@@ -14,8 +14,8 @@ performs fork choice. The eth1 client, a.k.a. the 'execution layer', receives bl
 from the eth2 client, executes/verifies it and maintains the application state.
 
 The interface that eth2 and eth1 use to communicate is uni-directional: all cross-client
-communication is initiated by eth2, and happens in the form of requests. Eth1 simply
-responds to each request, but cannot request any information from eth2.
+communication is initiated by eth2, and happens in the form of requests. Eth1 responds to
+to requests, but cannot request any information from eth2.
 
 ** Definitions
 
@@ -94,7 +94,7 @@ block B_f, clients must handle final(B_x) as follows:
     is unknown.
   - for x > f+1, attempting to finalize an unknown future block, sync is restarted on B_x
     and the response is 'syncing'.
-  - for x == f+1, the block is simply appended to the database. If the client is still
+  - for x == f+1, the block is appended to the database. If the client is still
     busy syncing to B_f, the response is 'syncing'. If the client is done syncing to block
     B_f, it processes block B_x and outputs synced(B_x) or invalid(B_x).
 
@@ -189,7 +189,7 @@ efficient reorg processing: when the eth2 client detects a reorg from block b_x 
 b_y, it first determines the common ancestor b_a. It can then submit all blocks
 B_{a+1}...B_y for processing. When the eth1 client detects that a block has already been
 processed because its state is available as a diff in memory, it can skip EVM processing
-of the block and simply move its head state reference to the new block.
+of the block and just move its head state reference to the new block.
 
 While reorgs below B_F cannot happen during normal operation of the beacon chain, it may
 still be necessary to roll back to an earlier state when EVM processing flaws cause the
@@ -221,8 +221,7 @@ We have decided to tackle this issue in the following way:
   upper bound of 512 blocks on the number of states kept in memory.
 - Define that clients should keep the state of B_C in persistent storage.
 - Use B_C as the initial sync target. This has implications on the sync trigger because
-  the eth1 client can no longer simply rely on final(B) to start sync (B_C may be
-  non-final).
+  the eth1 client can no longer rely on final(B) to start sync (B_C may be non-final).
 - Add a new call **reset(B)** to reset the eth1 client to a historical block. Require that
   clients must be able to satisfy any reset in range B_{F}...B_{H}. They will probably have to
   implement something like the persistent reverse diffs recommended in the reorg section.

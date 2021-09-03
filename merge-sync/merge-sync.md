@@ -4,7 +4,7 @@
 
 In this document, we (the geth team) present our ideas for implementing chain synchronization on the merged eth1 + eth2 chain. After the merge event, eth1 and eth2 clients run in tandem. The eth2 client maintains the connection to the beacon chain and performs fork choice. The eth1 client, a.k.a. the 'execution layer', receives block data from the eth2 client, executes/verifies it and maintains the application state.
 
-The interface that eth2 and eth1 use to communicate is uni-directional: all cross-client communication is initiated by eth2, and happens in the form of requests. Eth1 simply responds to each request, but cannot request any information from eth2.
+The interface that eth2 and eth1 use to communicate is uni-directional: all cross-client communication is initiated by eth2, and happens in the form of requests. Eth1 responds to to requests, but cannot request any information from eth2.
 
 
 ## Definitions
@@ -52,7 +52,7 @@ While the chain is downloading/processing, the eth1 client receives further noti
 
 -   for x <= f, the response is 'old' if the block is known, or invalid(B<sub>x</sub>) if the block is unknown.
 -   for x > f+1, attempting to finalize an unknown future block, sync is restarted on B<sub>x</sub> and the response is 'syncing'.
--   for x == f+1, the block is simply appended to the database. If the client is still busy syncing to B<sub>f</sub>, the response is 'syncing'. If the client is done syncing to block B<sub>f</sub>, it processes block B<sub>x</sub> and outputs synced(B<sub>x</sub>) or invalid(B<sub>x</sub>).
+-   for x == f+1, the block is appended to the database. If the client is still busy syncing to B<sub>f</sub>, the response is 'syncing'. If the client is done syncing to block B<sub>f</sub>, it processes block B<sub>x</sub> and outputs synced(B<sub>x</sub>) or invalid(B<sub>x</sub>).
 
 When proc() is received during sync, the response is 'syncing'.
 
@@ -90,7 +90,7 @@ It is common knowledge that the application state of eth1 can become quite large
 
 In order to make state synchronization work, the application state of the latest finalized block B<sub>F</sub> must be available for download. We therefore recommend that clients which store exactly one full copy of the state should store the state of B<sub>F</sub>.
 
-For the tree of non-finalized blocks beyond B<sub>F</sub>, the state diff of each block can be held in main memory. As new blocks are finalized, the client applies their diffs to the database, moving the persistent state forward. Storing diffs in memory allows for efficient reorg processing: when the eth2 client detects a reorg from block b<sub>x</sub> to block b<sub>y</sub>, it first determines the common ancestor b<sub>a</sub>. It can then submit all blocks B<sub>a+1</sub>&#x2026;B<sub>y</sub> for processing. When the eth1 client detects that a block has already been processed because its state is available as a diff in memory, it can skip EVM processing of the block and simply move its head state reference to the new block.
+For the tree of non-finalized blocks beyond B<sub>F</sub>, the state diff of each block can be held in main memory. As new blocks are finalized, the client applies their diffs to the database, moving the persistent state forward. Storing diffs in memory allows for efficient reorg processing: when the eth2 client detects a reorg from block b<sub>x</sub> to block b<sub>y</sub>, it first determines the common ancestor b<sub>a</sub>. It can then submit all blocks B<sub>a+1</sub>&#x2026;B<sub>y</sub> for processing. When the eth1 client detects that a block has already been processed because its state is available as a diff in memory, it can skip EVM processing of the block and just move its head state reference to the new block.
 
 While reorgs below B<sub>F</sub> cannot happen during normal operation of the beacon chain, it may still be necessary to roll back to an earlier state when EVM processing flaws cause the client to deviate from the canonical chain. As a safety net for this exceptional case, we recommend that eth1 clients to maintain a way to manually reorg up to 90,000 blocks (roughly 2 weeks), as this would provide sufficient time to fix issues.
 
@@ -109,7 +109,7 @@ We have decided to tackle this issue in the following way:
 
 -   At head block H, define the 'calcified' block B<sub>C</sub> with C = max(H-512, F). This puts an upper bound of 512 blocks on the number of states kept in memory.
 -   Define that clients should keep the state of B<sub>C</sub> in persistent storage.
--   Use B<sub>C</sub> as the initial sync target. This has implications on the sync trigger because the eth1 client can no longer simply rely on final(B) to start sync (B<sub>C</sub> may be non-final).
+-   Use B<sub>C</sub> as the initial sync target. This has implications on the sync trigger because the eth1 client can no longer rely on final(B) to start sync (B<sub>C</sub> may be non-final).
 -   Add a new call ****reset(B)**** to reset the eth1 client to a historical block. Require that clients must be able to satisfy any reset in range B<sub>F</sub>&#x2026;B<sub>H</sub>. They will probably have to implement something like the persistent reverse diffs recommended in the reorg section.
 
 Adding the calcified block also adds some tricky new corner cases and failure modes. In particular, if the eth1 client just performed snap sync, it will not be able to reorg below B<sub>C</sub>, because reverse diffs down to B<sub>F</sub> will not be available. We may solve this by recommending that nodes should attempt snap sync if reset(B) cannot be satisfied. For sure, some nodes will be synced enough to serve the target state. In the absolute worst case, we need to make reverse diffs available for download in snap sync.
