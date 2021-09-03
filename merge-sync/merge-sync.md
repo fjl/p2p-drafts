@@ -101,7 +101,7 @@ To make this 'manual intervention reorg' work, eth1 client can maintain backward
 
 In early review of this scheme, two issues were discovered. Both stem from our misunderstanding of eth2 finalization semantics.
 
-(1) Since eth2 finalizes blocks only on epoch boundaries, it only wants to call final(B) for epoch blocks. This could be handled a bit better by also using proc(B) in the sync trigger.
+(1) Since eth2 finalizes blocks only on epoch boundaries, it wants to call final(B) only for epoch blocks. This could be handled a bit better by also using proc(B) in the sync trigger.
 
 (2) While finalization will work within ~64 blocks in the happy case, it can take up to 2 weeks to finalize in the event of a network partition. Since the maximum number of non-finalized blocks is so much larger than we initially anticipated, it will not be possible to use B<sub>F</sub> as the persistent state block.
 

@@ -206,7 +206,7 @@ applied to the state of B_F, resetting the client to an earlier state.
 In early review of this scheme, two issues were discovered. Both stem from our
 misunderstanding of eth2 finalization semantics.
 
-(1) Since eth2 finalizes blocks only on epoch boundaries, it only wants to call final(B)
+(1) Since eth2 finalizes blocks only on epoch boundaries, it wants to call final(B) only
 for epoch blocks. This could be handled a bit better by also using proc(B) in the sync
 trigger.
 
