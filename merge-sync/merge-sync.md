@@ -107,7 +107,7 @@ In early review of this scheme, two issues were discovered. Both stem from our m
 
 We have decided to tackle this issue in the following way:
 
--   At head block H, define the 'calcified' block B<sub>C</sub> with C = min(H-512, F). This puts an upper bound of 512 blocks on the number of states kept in memory.
+-   At head block H, define the 'calcified' block B<sub>C</sub> with C = max(H-512, F). This puts an upper bound of 512 blocks on the number of states kept in memory.
 -   Define that clients should keep the state of B<sub>C</sub> in persistent storage.
 -   Use B<sub>C</sub> as the initial sync target. This has implications on the sync trigger because the eth1 client can no longer simply rely on final(B) to start sync (B<sub>C</sub> may be non-final).
 -   Add a new call ****reset(B)**** to reset the eth1 client to a historical block. Require that clients must be able to satisfy any reset in range B<sub>F</sub>&#x2026;B<sub>H</sub>. They will probably have to implement something like the persistent reverse diffs recommended in the reorg section.
